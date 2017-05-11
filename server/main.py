@@ -1,5 +1,6 @@
 import socket, sys, re
 from const import *
+from user import *
 
 def print_logo(conn):
     conn.send(CLEAR_TERMINAL + COR_LOGO) # clear terminal & colored
@@ -78,13 +79,14 @@ def login_success(conn, user):
         data = recv_line(conn)
 
         if data == '1':
-            print("balance")
+            user_check_balance(conn, user)
+            break
         elif data == '2':
-            print("history")
+            user_check_history(conn, user)
         elif data == '3':
-            print("transfer")
+            user_transfer(conn, user)
         elif data == '4':
-            print("edit")
+            user_mypage(conn, user)
         else:
             errmsg = ERRMSG_OPTION
 

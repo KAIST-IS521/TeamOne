@@ -7,6 +7,7 @@ COR_LOGO = "\033[94m"
 COR_BASE = "\033[1;33;40m"
 COR_ERRMSG = "\033[0;37;41m"
 COR_DEFAULT = "\033[0m"
+COR_RESULT = "\033[0;37;45m"
 
 ERRMSG_OPTION = COR_ERRMSG+ " Wrong Number.\n" + COR_BASE
 ERRMSG_USER_LEN = (COR_ERRMSG + "\n Username should be shorter than " +
