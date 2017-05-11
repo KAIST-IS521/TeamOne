@@ -26,6 +26,19 @@ def get_option(conn):
         conn.send(" What would you like to do? -> ")
     
         # get an option from user
+	data = recv_line(conn)
+	print(data)
+	break
+
+def recv_line(conn):
+    # recv 1 byte until get '\n'
+    data = []
+    while True:
+        byte = conn.recv(1)
+        if byte == '\n':
+            break
+        data.append(byte)
+    return ''.join(data)
 
 def server():
     # Create a TCP/IP socket
