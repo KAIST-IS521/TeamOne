@@ -56,6 +56,38 @@ def login(conn):
 
     # TODO SQL request and confirm
 
+    login_success(conn, name)
+
+def login_success(conn, user):
+    errmsg = ""
+
+    while True:
+        # print user menu
+        print_logo(conn)
+        conn.sendall(" Hello, " + user + ".\n" +
+                     " 1. Check balance \n" + 
+                     " 2. Check transaction history \n" +
+                     " 3. Transfer \n" +
+                     " 4. Edit user info & Remove account \n\n")
+        if errmsg:
+            conn.send(errmsg)
+
+        conn.send(" What would you like to do? -> ")
+        
+        # get an option from user
+        data = recv_line(conn)
+
+        if data == '1':
+            print("balance")
+        elif data == '2':
+            print("history")
+        elif data == '3':
+            print("transfer")
+        elif data == '4':
+            print("edit")
+        else:
+            errmsg = ERRMSG_OPTION
+
 def get_option(conn):
     errmsg = ""
 
