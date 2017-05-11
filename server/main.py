@@ -22,7 +22,8 @@ def get_username(conn):
 
         # get username from user
         data = recv_line(conn)
-        
+       
+        # remove all space existing in username
         regex = re.compile(r'\s+')
         data = re.sub(regex, '', data)
 
@@ -49,7 +50,8 @@ def get_password(conn):
 
 def login(conn):
     print_logo(conn)
-    conn.sendall(" Please input username and password. \n")
+    conn.sendall(" [ Login ]\n" +
+                 " Please input username and password. \n\n")
 
     # get & store username and password
     name = get_username(conn)
@@ -65,7 +67,8 @@ def login_success(conn, user):
     while True:
         # print user menu
         print_logo(conn)
-        conn.sendall(" Hello, " + user + ".\n" +
+        conn.sendall(" [ User Menu ]\n" +
+                     " Hello, " + user + ".\n\n" +
                      " 1. Check balance \n" + 
                      " 2. Check transaction history \n" +
                      " 3. Transfer \n" +
@@ -80,13 +83,14 @@ def login_success(conn, user):
 
         if data == '1':
             user_check_balance(conn, user)
-            break
         elif data == '2':
             user_check_history(conn, user)
+            break
         elif data == '3':
             user_transfer(conn, user)
         elif data == '4':
             user_mypage(conn, user)
+            break
         else:
             errmsg = ERRMSG_OPTION
 

@@ -16,3 +16,7 @@ ERRMSG_PW_LEN = (COR_ERRMSG + "\n Password should be shorter than " +
                     str(LEN_PASSWORD) + ".\n" + COR_BASE)
 ERRMSG_USER_NULL = COR_ERRMSG + "\n Please input the username.\n" + COR_BASE
 ERRMSG_PW_NULL = COR_ERRMSG + "\n Please input the password.\n" + COR_BASE
+
+ERRMSG_RECV_LEN = COR_ERRMSG + "\n Invalid receiver.\n" + COR_BASE
+ERRMSG_RECV_NULL = COR_ERRMSG + "\n Please input the receiver.\n" + COR_BASE
+ERRMSG_WON_NULL = COR_ERRMSG + "\n Please input amount to transfer.\n" + COR_BASE
