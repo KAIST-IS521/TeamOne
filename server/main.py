@@ -1,4 +1,4 @@
-import socket, sys
+import socket, sys, re
 from const import *
 
 def print_logo(conn):
@@ -15,20 +15,74 @@ def print_logo(conn):
     conn.send(COR_BASE) # colored
     conn.send(" =========================================\n")
 
+def get_username(conn):
+    while True:
+        conn.send(" * Username -> ")
+
+        # get username from user
+        data = recv_line(conn)
+        
+        regex = re.compile(r'\s+')
+        data = re.sub(regex, '', data)
+
+        if data == '':
+            conn.send(ERRMSG_USER_NULL)
+        elif len(data) > LEN_USERNAME:
+            conn.send(ERRMSG_USER_LEN)
+        else:
+            return data
+
+def get_password(conn):
+    while True:
+        conn.send(" * Password -> ")
+
+        # get password from user
+        data = recv_line(conn)
+        
+        if data == '':
+            conn.send(ERRMSG_PW_NULL)
+        elif len(data) > LEN_PASSWORD:
+            conn.send(ERRMSG_PW_LEN)
+        else:
+            return data
+
+def login(conn):
+    print_logo(conn)
+    conn.sendall(" Please input username and password. \n")
+
+    # get & store username and password
+    name = get_username(conn)
+    pw = get_password(conn)
+
+    # TODO SQL request and confirm
+
 def get_option(conn):
+    errmsg = ""
+
     while True:
         # print main screen
         print_logo(conn)
         conn.sendall(" Hello, customer. \n" +
                      " 1. Login \n" +
                      " 2. Register \n\n") 
-     
+        if errmsg:
+            conn.send(errmsg)
+
         conn.send(" What would you like to do? -> ")
     
         # get an option from user
 	data = recv_line(conn)
-	print(data)
-	break
+	
+        if data == '1':
+            login(conn)
+            break
+
+        elif data == '2':
+            print("register")
+            break
+
+        else:
+            errmsg = ERRMSG_OPTION
 
 def recv_line(conn):
     # recv 1 byte until get '\n'
