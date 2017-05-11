@@ -1,26 +1,31 @@
-import socket
-import sys
-import os
-import subprocess
+import socket, sys
+from const import *
 
-def print_screen(conn):
-    conn.send("\x1b[2J\x1b[H" + "\033[94m") # clear terminal & colored blue
-    conn.sendall(" /$$$$$$$   /$$$$$$  /$$   /$$ /$$   /$$\n" +
-                " | $$__  $$ /$$__  $$| $$$ | $$| $$  /$$/\n" + 
-                " | $$  \ $$| $$  \ $$| $$$$| $$| $$ /$$/ \n" +
-                " | $$$$$$$ | $$$$$$$$| $$ $$ $$| $$$$$/  \n" +
-                " | $$__  $$| $$__  $$| $$  $$$$| $$  $$  \n" +
-                " | $$  \ $$| $$  | $$| $$\  $$$| $$\  $$ \n" +
-                " | $$$$$$$/| $$  | $$| $$ \  $$| $$ \  $$\n" +
-                " |_______/ |__/  |__/|__/  \__/|__/  \__/\n\n")
+def print_logo(conn):
+    conn.send(CLEAR_TERMINAL + COR_LOGO) # clear terminal & colored
+    conn.sendall("  /$$$$$$$   /$$$$$$  /$$   /$$ /$$   /$$\n" +
+                 " | $$__  $$ /$$__  $$| $$$ | $$| $$  /$$/\n" + 
+                 " | $$  \ $$| $$  \ $$| $$$$| $$| $$ /$$/ \n" +
+                 " | $$$$$$$ | $$$$$$$$| $$ $$ $$| $$$$$/  \n" +
+                 " | $$__  $$| $$__  $$| $$  $$$$| $$  $$  \n" +
+                 " | $$  \ $$| $$  | $$| $$\  $$$| $$\  $$ \n" +
+                 " | $$$$$$$/| $$  | $$| $$ \  $$| $$ \  $$\n" +
+                 " |_______/ |__/  |__/|__/  \__/|__/  \__/\n\n")
 
-    conn.send("\033[1m" + "\033[95m") # colored pink and bold
-    conn.sendall(" =========================================\n" +
-                 " Hello, customer. \n What would you like to do?\n\n" +
-                 " 1. Login \n" +
-                 " 2. Register \n" +
-                 " =========================================\n")
-    conn.send('\033[0m') # colored white(normal)
+    conn.send(COR_BASE) # colored
+    conn.send(" =========================================\n")
+
+def get_option(conn):
+    while True:
+        # print main screen
+        print_logo(conn)
+        conn.sendall(" Hello, customer. \n" +
+                     " 1. Login \n" +
+                     " 2. Register \n\n") 
+     
+        conn.send(" What would you like to do? -> ")
+    
+        # get an option from user
 
 def server():
     # Create a TCP/IP socket
@@ -34,16 +39,15 @@ def server():
 
     # Listen for incoming connetions
     sock.listen(1)
-
+    
     while True:
         connection, client_address = sock.accept()
-        
+
         try:
-            # print main screen
-            print_screen(connection) 
-            
+            get_option(connection)
         finally:
             # Close the connection
+            connection.send(COR_DEFAULT) # colored white(normal)
             connection.close()
             print("closed")
 
