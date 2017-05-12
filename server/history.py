@@ -1,4 +1,4 @@
-from func import *
+from util import *
 
 def user_check_history(conn, user):
     print("history")

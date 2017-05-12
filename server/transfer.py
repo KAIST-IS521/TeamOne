@@ -110,7 +110,7 @@ def transfer_cancel(conn, user):
         # get input from user
         data = recv_line(conn)
         data = data.upper()
-
+        
         if data == 'Y':
             return
         else:

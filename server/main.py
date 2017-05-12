@@ -95,8 +95,8 @@ def get_user_menu(conn, user):
         elif data == '3':
             user_transfer(conn, user)
         elif data == '4':
-            user_mypage(conn, user)
-            break
+            ret = user_mypage(conn, user)
+            if ret == 1: return
         else:
             errmsg = ERRMSG_OPTION
 
@@ -119,11 +119,9 @@ def get_main_menu(conn):
 	
         if data == '1':
             login(conn)
-            break
 
         elif data == '2':
             print("register")
-            break
 
         else:
             errmsg = ERRMSG_OPTION
