@@ -1,53 +1,69 @@
 import socket, sys, re
 from const import *
-from func import *
+from util import *
 from balance import *
 from history import *
 from transfer import *
 from mypage import *
 
 def get_username(conn):
+    errmsg = ""
+
     while True:
+        print_logo(conn)
+        conn.sendall(" [ Login ]\n" +
+                     " Please input username and password. \n\n")
+
+        if errmsg:
+            conn.send(errmsg)
+
         conn.send(" * Username -> ")
 
         # get username from user
         data = recv_line(conn)
-       
-        # remove all space existing in username
-        regex = re.compile(r'\s+')
-        data = re.sub(regex, '', data)
+
+        # ID : lowerletter, upperletter, number
+        regex = re.compile(REGEX_USERNAME)
 
         if data == '':
-            conn.send(ERRMSG_USER_NULL)
-        elif len(data) > LEN_USERNAME:
-            conn.send(ERRMSG_USER_LEN)
+            errmsg = ERRMSG_USER_NULL
+        elif regex.match(data) == None:
+            errmsg = ERRMSG_USER_INVAL
         else:
             return data
 
-def get_password(conn):
+def get_password(conn, name):
+    errmsg = ""
+
     while True:
+        print_logo(conn)
+        conn.sendall(" [ Login ]\n" +
+                     " Please input username and password. \n\n" +
+                     " * Username -> " + name + "\n")
+        if errmsg:
+            conn.send(errmsg)
+
         conn.send(" * Password -> ")
 
         # get password from user
         data = recv_line(conn)
         
         if data == '':
-            conn.send(ERRMSG_PW_NULL)
+            errmsg = ERRMSG_PW_NULL
         elif len(data) > LEN_PASSWORD:
-            conn.send(ERRMSG_PW_LEN)
+            errmsg = ERRMSG_PW_LEN
         else:
             return data
 
 def login(conn):
-    print_logo(conn)
-    conn.sendall(" [ Login ]\n" +
-                 " Please input username and password. \n\n")
 
     # get & store username and password
     name = get_username(conn)
-    pw = get_password(conn)
+    pw = get_password(conn, name)
 
     # TODO SQL request and confirm
+
+    # TODO add UI for login fail
 
     get_user_menu(conn, name)
 
