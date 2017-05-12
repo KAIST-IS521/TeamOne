@@ -37,12 +37,15 @@ def user_transfer(conn, user):
         # Y -> do transfer
         if data == 'Y':
             # TODO: transfer
-
+            conn.sendall(COR_SUCCESS + 
+                         "\n ** Transfer complete successfully! **\n\n" + 
+                         COR_BASE)
             break
         
         # N -> cancel the transfer
         elif data == 'N':
-            conn.send("\n ** Transfer Canceled ** \n\n")
+            conn.sendall(COR_ERRMSG + 
+                         "\n ** Transfer Canceled ** \n\n" + COR_BASE)
             break
 
     # return to the previous menu
