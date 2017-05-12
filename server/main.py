@@ -1,20 +1,10 @@
 import socket, sys, re
 from const import *
-from user import *
-
-def print_logo(conn):
-    conn.send(CLEAR_TERMINAL + COR_LOGO) # clear terminal & colored
-    conn.sendall("  /$$$$$$$   /$$$$$$  /$$   /$$ /$$   /$$\n" +
-                 " | $$__  $$ /$$__  $$| $$$ | $$| $$  /$$/\n" + 
-                 " | $$  \ $$| $$  \ $$| $$$$| $$| $$ /$$/ \n" +
-                 " | $$$$$$$ | $$$$$$$$| $$ $$ $$| $$$$$/  \n" +
-                 " | $$__  $$| $$__  $$| $$  $$$$| $$  $$  \n" +
-                 " | $$  \ $$| $$  | $$| $$\  $$$| $$\  $$ \n" +
-                 " | $$$$$$$/| $$  | $$| $$ \  $$| $$ \  $$\n" +
-                 " |_______/ |__/  |__/|__/  \__/|__/  \__/\n\n")
-
-    conn.send(COR_BASE) # colored
-    conn.send(" =========================================\n")
+from func import *
+from balance import *
+from history import *
+from transfer import *
+from mypage import *
 
 def get_username(conn):
     while True:
@@ -59,9 +49,9 @@ def login(conn):
 
     # TODO SQL request and confirm
 
-    login_success(conn, name)
+    get_user_menu(conn, name)
 
-def login_success(conn, user):
+def get_user_menu(conn, user):
     errmsg = ""
 
     while True:
@@ -94,7 +84,7 @@ def login_success(conn, user):
         else:
             errmsg = ERRMSG_OPTION
 
-def get_option(conn):
+def get_main_menu(conn):
     errmsg = ""
 
     while True:
@@ -122,16 +112,6 @@ def get_option(conn):
         else:
             errmsg = ERRMSG_OPTION
 
-def recv_line(conn):
-    # recv 1 byte until get '\n'
-    data = []
-    while True:
-        byte = conn.recv(1)
-        if byte == '\n':
-            break
-        data.append(byte)
-    return ''.join(data)
-
 def server():
     # Create a TCP/IP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -149,7 +129,7 @@ def server():
         connection, client_address = sock.accept()
 
         try:
-            get_option(connection)
+            get_main_menu(connection)
         finally:
             # Close the connection
             connection.send(COR_DEFAULT) # colored white(normal)
