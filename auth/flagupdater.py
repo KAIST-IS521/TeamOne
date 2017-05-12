@@ -1,6 +1,6 @@
 import socket, sys, re, json
 
-def saveflag():
+def saveflag(jsondata):
     print("saveflag")
 
 def server():
