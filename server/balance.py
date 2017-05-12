@@ -18,4 +18,4 @@ def user_check_balance(conn, user):
         data = data.upper()
 
         if data == 'Y':
-            break
+            return
