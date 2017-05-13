@@ -5,7 +5,9 @@ all: mysql
 mysql:
 	@ echo "mysql-server mysql-server/root_password password "${root_password} | sudo debconf-set-selections
 	@ echo "mysql-server mysql-server/root_password_again password "${root_password} | sudo debconf-set-selections
-	sudo apt-get -y install mysql-server
+	sudo apt-get update
+	sudo apt-get -y install mysql-server python3-pip
+	sudo pip3 install PyMySQL
 
 clean:
 	
