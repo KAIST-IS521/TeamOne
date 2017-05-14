@@ -28,9 +28,11 @@ def user_mypage(conn, user):
         conn.sendall(b" [ My Account ]\n" +
                      b" Hello, " + user.encode() + b".\n\n" +
                      b" 1. Edit user info \n" +
-                     b" 2. Remove account \n\n")
+                     b" 2. Remove account \n" +
+                     b" 3. Previous menu \n\n")
         if errmsg:
             conn.send(errmsg)
+        errmsg = ""
 
         conn.send(b" What would you like to do? -> ")
 
@@ -39,11 +41,11 @@ def user_mypage(conn, user):
 
         if data == '1':
             user_edit_info(conn, user)
-            errmsg = ""
             return 0
         elif data == '2':
-            errmsg = ""
             return user_remove_account(conn, user)
+        elif data == '3':
+            return 0
         else:
             errmsg = ERRMSG_OPTION
 

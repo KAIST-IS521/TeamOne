@@ -1,4 +1,5 @@
 import socket, sys, re
+from threading import Thread
 from const import *
 from util import *
 from balance import *
@@ -78,9 +79,12 @@ def get_user_menu(conn, user):
                      b" 1. Check balance \n" + 
                      b" 2. Check transaction history \n" +
                      b" 3. Transfer \n" +
-                     b" 4. Edit user info & Remove account \n\n")
+                     b" 4. Edit user info & Remove account \n" +
+                     b" 5. Logout \n\n")
+
         if errmsg:
             conn.send(errmsg)
+        errmsg = ""
 
         conn.send(b" What would you like to do? -> ")
         
@@ -89,32 +93,32 @@ def get_user_menu(conn, user):
 
         if data == '1':
             user_check_balance(conn, user)
-            errmsg = ""
         elif data == '2':
             user_check_history(conn, user)
-            errmsg = ""
         elif data == '3':
             user_transfer(conn, user)
-            errmsg = ""
         elif data == '4':
             ret = user_mypage(conn, user)
-            errmsg = ""
-            if ret == 1: return
+            if ret == 1: return # if user remove account -> go to main
+        elif data == '5': # logout -> go to main
+            return
         else:
             errmsg = ERRMSG_OPTION
 
-def get_main_menu(conn):
+def get_main_menu(conn, addr):
     errmsg = ""
 
     while True:
         # print main screen
         print_logo(conn)
-        conn.sendall(b" Hello, customer. "+ b'\n' +
-                     b" 1. Login" + b'\n' +
-                     b" 2. Register" + b'\n\n') 
+        conn.sendall(b" Hello, customer.\n" +
+                     b" 1. Login\n" +
+                     b" 2. Register\n" +
+                     b" 3. Terminate\n\n")
 
         if errmsg:
             conn.send(errmsg)
+        errmsg = ""
 
         conn.sendall(b" What would you like to do? -> ")
     
@@ -123,16 +127,33 @@ def get_main_menu(conn):
         
         if data == '1':
             login(conn)
-            errmsg = ""
 
         elif data == '2':
             print("register")
-            errmsg = ""
+
+        elif data == '3': # terminate program
+            # close the connection
+            conn.send(COR_DEFAULT) # colored white(normal)
+            conn.close()
+            print("[Terminated] "+ addr[0] + " closed.")
+            return
 
         else:
             errmsg = ERRMSG_OPTION
 
+def handler(conn, addr):
+    try:
+        get_main_menu(conn, addr)
+
+    except:
+        # Close the connection
+        conn.send(COR_DEFAULT) # colored white(normal)
+        conn.close()
+        print("[Error] " + addr[0] + " closed.")
+
 def server():
+    thread_list = []
+
     # Create a TCP/IP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -143,18 +164,22 @@ def server():
     sock.bind(server_address)
 
     # Listen for incoming connetions
-    sock.listen(1)
+    sock.listen(5)
     
     while True:
-        connection, client_address = sock.accept()
+        connection, client_addr = sock.accept()
 
-        try:
-            get_main_menu(connection)
-        finally:
-            # Close the connection
-            connection.send(COR_DEFAULT) # colored white(normal)
-            connection.close()
-            print("closed")
+        thread = Thread(target=handler, args=(connection, client_addr))
+        thread_list.append(thread)
+        thread.start()
+
+        for thread in thread_list:
+            if not thread.isAlive():
+                thread_list.remove(thread)
+                thread.join()
 
 if __name__ == "__main__":
-    server()
+    try:
+        server()
+    except KeyboardInterrupt:
+        print ("Ctrl_C pressed ... Shutting Down")
