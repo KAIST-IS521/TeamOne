@@ -89,13 +89,16 @@ def get_user_menu(conn, user):
 
         if data == '1':
             user_check_balance(conn, user)
+            errmsg = ""
         elif data == '2':
             user_check_history(conn, user)
-            break
+            errmsg = ""
         elif data == '3':
             user_transfer(conn, user)
+            errmsg = ""
         elif data == '4':
             ret = user_mypage(conn, user)
+            errmsg = ""
             if ret == 1: return
         else:
             errmsg = ERRMSG_OPTION
@@ -120,9 +123,11 @@ def get_main_menu(conn):
         
         if data == '1':
             login(conn)
+            errmsg = ""
 
         elif data == '2':
             print("register")
+            errmsg = ""
 
         else:
             errmsg = ERRMSG_OPTION

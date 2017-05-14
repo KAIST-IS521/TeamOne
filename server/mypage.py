@@ -7,13 +7,13 @@ def user_mypage(conn, user):
     while True:
         print_logo(conn)
         
+        conn.sendall(b" [ Identity Verification ]\n" +
+                     b" Please enter password for confirmation.\n\n")
+        
         if errmsg:
             conn.send(errmsg)
-        
-        conn.sendall(b" [ Identity Verification ]\n" +
-                     b" Please enter password for confirmation.\n\n" +
-                     b" * Password -> ")
-        
+                     
+        conn.sendall(b" * Password -> ")
         data = recv_line(conn)
         
         # TODO: check password valid or not
@@ -39,8 +39,10 @@ def user_mypage(conn, user):
 
         if data == '1':
             user_edit_info(conn, user)
+            errmsg = ""
             return 0
         elif data == '2':
+            errmsg = ""
             return user_remove_account(conn, user)
         else:
             errmsg = ERRMSG_OPTION
