@@ -5,11 +5,11 @@ def user_check_balance(conn, user):
     balance = 0
 
     print_logo(conn)
-    conn.sendall(" [ Check Balance ]\n" +
-                 " Hello, " + user + ".\n\n" + COR_RESULT + 
-                 " Balance: " + str(balance) + " won\n\n" + COR_BASE)
+    conn.sendall(b" [ Check Balance ]\n" +
+                 b" Hello, " + user.encode() + b".\n\n" + COR_RESULT + 
+                 b" Balance: " + bytes(str(balance).encode()) + b" won\n\n" + COR_BASE)
         
-    conn.send(" Enter any key to return to the previous menu -> ")
+    conn.send(b" Enter any key to return to the previous menu -> ")
         
     # get any input from user to return previous menu
     data = recv_line(conn)

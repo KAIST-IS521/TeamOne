@@ -10,9 +10,9 @@ def user_mypage(conn, user):
         if errmsg:
             conn.send(errmsg)
         
-        conn.sendall(" [ Identity Verification ]\n" +
-                     " Please enter password for confirmation.\n\n" +
-                     " * Password -> ")
+        conn.sendall(b" [ Identity Verification ]\n" +
+                     b" Please enter password for confirmation.\n\n" +
+                     b" * Password -> ")
         
         data = recv_line(conn)
         
@@ -25,14 +25,14 @@ def user_mypage(conn, user):
     errmsg = ""
     while True:
         print_logo(conn)
-        conn.sendall(" [ My Account ]\n" +
-                     " Hello, " + user + ".\n\n" +
-                     " 1. Edit user info \n" +
-                     " 2. Remove account \n\n")
+        conn.sendall(b" [ My Account ]\n" +
+                     b" Hello, " + user.encode() + b".\n\n" +
+                     b" 1. Edit user info \n" +
+                     b" 2. Remove account \n\n")
         if errmsg:
             conn.send(errmsg)
 
-        conn.send(" What would you like to do? -> ")
+        conn.send(b" What would you like to do? -> ")
 
         # get an option from user
         data = recv_line(conn)
@@ -56,13 +56,13 @@ def user_remove_account(conn, user):
         print_logo(conn)
 
         # print history & confirm message
-        conn.sendall(" [ Remove Account ]\n" + 
-                     " Hello, " + user + ".\n\n")
+        conn.sendall(b" [ Remove Account ]\n" + 
+                     b" Hello, " + user.encode() + b".\n\n")
         if errmsg:
             conn.send(errmsg)
             
         conn.sendall(COR_ERRMSG +
-                " Are you ABSOLUTELY sure to remove the account? (Y/N) -> ")
+                b" Are you ABSOLUTELY sure to remove the account? (Y/N) -> ")
 
         # get input from usr
         data = recv_line(conn)
@@ -76,8 +76,8 @@ def user_remove_account(conn, user):
         
         # N -> cancel deletion
         elif data == 'N':
-            conn.send("\n ** Removing Account Canceled ** \n" +
-                      "\n Enter any key to return to the previous menu -> ")
+            conn.send(b"\n ** Removing Account Canceled ** \n" +
+                      b"\n Enter any key to return to the previous menu -> ")
             data = recv_line(conn)
             return 0
 
@@ -87,8 +87,8 @@ def user_remove_account(conn, user):
 def remove_success(conn, user):
     # TODO: remove correspoding account from DB
     
-    conn.sendall("\n Your account is removed successfully.\n" +
-                 " Thank you for using our bank so far.\n\n" +
-                 " Enter any key to return to the main menu -> ")
+    conn.sendall(b"\n Your account is removed successfully.\n" +
+                 b" Thank you for using our bank so far.\n\n" +
+                 b" Enter any key to return to the main menu -> ")
     
     data = recv_line(conn)

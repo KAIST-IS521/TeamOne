@@ -11,13 +11,13 @@ def get_username(conn):
 
     while True:
         print_logo(conn)
-        conn.sendall(" [ Login ]\n" +
-                     " Please input username and password. \n\n")
+        conn.sendall(b" [ Login ]\n" +
+                     b" Please input username and password. \n\n")
 
         if errmsg:
             conn.send(errmsg)
 
-        conn.send(" * Username -> ")
+        conn.send(b" * Username -> ")
 
         # get username from user
         data = recv_line(conn)
@@ -37,13 +37,13 @@ def get_password(conn, name):
 
     while True:
         print_logo(conn)
-        conn.sendall(" [ Login ]\n" +
-                     " Please input username and password. \n\n" +
-                     " * Username -> " + name + "\n")
+        conn.sendall(b" [ Login ]\n" +
+                     b" Please input username and password. \n\n" +
+                     b" * Username -> " + bytes(name.encode()) + b"\n")
         if errmsg:
             conn.send(errmsg)
 
-        conn.send(" * Password -> ")
+        conn.send(b" * Password -> ")
 
         # get password from user
         data = recv_line(conn)
@@ -73,16 +73,16 @@ def get_user_menu(conn, user):
     while True:
         # print user menu
         print_logo(conn)
-        conn.sendall(" [ User Menu ]\n" +
-                     " Hello, " + user + ".\n\n" +
-                     " 1. Check balance \n" + 
-                     " 2. Check transaction history \n" +
-                     " 3. Transfer \n" +
-                     " 4. Edit user info & Remove account \n\n")
+        conn.sendall(b" [ User Menu ]\n" +
+                     b" Hello, " + bytes(user.encode()) + b".\n\n" +
+                     b" 1. Check balance \n" + 
+                     b" 2. Check transaction history \n" +
+                     b" 3. Transfer \n" +
+                     b" 4. Edit user info & Remove account \n\n")
         if errmsg:
             conn.send(errmsg)
 
-        conn.send(" What would you like to do? -> ")
+        conn.send(b" What would you like to do? -> ")
         
         # get an option from user
         data = recv_line(conn)
@@ -106,17 +106,18 @@ def get_main_menu(conn):
     while True:
         # print main screen
         print_logo(conn)
-        conn.sendall(" Hello, customer. \n" +
-                     " 1. Login \n" +
-                     " 2. Register \n\n") 
+        conn.sendall(b" Hello, customer. "+ b'\n' +
+                     b" 1. Login" + b'\n' +
+                     b" 2. Register" + b'\n\n') 
+
         if errmsg:
             conn.send(errmsg)
 
-        conn.send(" What would you like to do? -> ")
+        conn.sendall(b" What would you like to do? -> ")
     
         # get an option from user
-	data = recv_line(conn)
-	
+        data = recv_line(conn)
+        
         if data == '1':
             login(conn)
 
@@ -133,7 +134,7 @@ def server():
 
     # Bind the socket to the port
     server_address = ('localhost', 1588)
-    print >> sys.stderr, 'starting up on %s port %s' %server_address
+    print('starting up on %s port %s' %server_address)
     sock.bind(server_address)
 
     # Listen for incoming connetions
