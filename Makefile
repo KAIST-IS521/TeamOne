@@ -8,6 +8,7 @@ mysql:
 	sudo apt-get update
 	sudo apt-get -y install mysql-server python3-pip
 	sudo pip3 install PyMySQL
+	sudo pip3 install tabulate
 
 clean:
 	
