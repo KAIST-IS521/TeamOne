@@ -67,55 +67,34 @@ def transfer_success(conn, user, receiver, amount):
     balance = 0 # TODO: get balance from DB
     date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     
-    errmsg = ""
-    while True:
-        print_logo(conn)
-        conn.sendall(" [ Transfer ] \n" +
-                     " Hello, " + user + ".\n\n")
-        print_transfer(conn, user, receiver, amount, date, balance)
-        conn.sendall(COR_SUCCESS + 
-                     "\n ** Transfer complete successfully! **\n\n" + 
-                     COR_BASE)
+    print_logo(conn)
+    conn.sendall(" [ Transfer ] \n" +
+                 " Hello, " + user + ".\n\n")
+
+    # print transfer details
+    print_transfer(conn, user, receiver, amount, date, balance)
+    conn.sendall(COR_SUCCESS + 
+                 "\n ** Transfer complete successfully! **\n\n" + COR_BASE)
         
-        if errmsg:
-            conn.send(errmsg)
-
-        conn.send(" Enter 'Y' to return to the previous menu -> ")
-
-        # get input from user
-        data = recv_line(conn)
-        data = data.upper()
-
-        if data == 'Y':
-            return
-        else:
-            errmsg = ERRMSG_OPTION
+    conn.send(" Enter any key to return to the previous menu -> ")
+    
+    # get input from user to return to previous menu
+    data = recv_line(conn)
 
 def transfer_cancel(conn, user):
     balance = 0 # TODO: get balance from DB
-    errmsg = ""
 
-    while True:
-        print_logo(conn)
-        conn.sendall(" [ Transfer ] \n" + 
-                     " Hello, " + user + ".\n\n" + COR_ERRMSG + 
-                     " ** Transfer Canceled ** \n\n" + COR_RESULT +
-                     " Balance: " + str(balance) + " won\n\n" + COR_BASE)
+    print_logo(conn)
+    conn.sendall(" [ Transfer ] \n" + 
+                 " Hello, " + user + ".\n\n" + COR_ERRMSG + 
+                 " ** Transfer Canceled ** \n\n" + COR_RESULT +
+                 " Balance: " + str(balance) + " won\n\n" + COR_BASE)
 
-        if errmsg:
-            conn.send(errmsg)
+    conn.send(" Enter any key to return to the previous menu -> ")
 
-        conn.send(" Enter 'Y' to return to the previous menu -> ")
-
-        # get input from user
-        data = recv_line(conn)
-        data = data.upper()
+    # get input from user to return to previous menu
+    data = recv_line(conn)
         
-        if data == 'Y':
-            return
-        else:
-            errmsg = ERRMSG_OPTION
-
 def get_receiver(conn, user):
     errmsg = ""
 

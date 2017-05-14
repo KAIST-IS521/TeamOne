@@ -76,7 +76,8 @@ def user_remove_account(conn, user):
         
         # N -> cancel deletion
         elif data == 'N':
-            conn.send("\n Enter any key to return to the previous menu -> ")
+            conn.send("\n ** Removing Account Canceled ** \n" +
+                      "\n Enter any key to return to the previous menu -> ")
             data = recv_line(conn)
             return 0
 
