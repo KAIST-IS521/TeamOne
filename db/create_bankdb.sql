@@ -27,7 +27,7 @@ DROP TABLE IF EXISTS `auth_table` ;
 SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `auth_table` (
   `github_id` VARCHAR(20) NOT NULL,
-  `pgp_key` VARCHAR(1000) NOT NULL,
+  `pgp_key` VARCHAR(4096) NOT NULL,
   `reg_flag` TINYINT NOT NULL DEFAULT 0,
   PRIMARY KEY (`github_id`))
 ENGINE = InnoDB;
