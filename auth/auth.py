@@ -1,6 +1,7 @@
 import gnupg
 import random
 import sys
+import os
 
 from pprint import pprint
 
@@ -15,10 +16,33 @@ def initialize_gpg():
         gpg = gnupg.GPG(gnupghome=homedir) 
     except TypeError:
         gpg = gnupg.GPG(homedir=homedir)
+# Generate a server key
+def generate_server_key():
+    if not os.path.exists('./teamone.pub'):
+        input_data = gpg.gen_key_input(
+        key_type='RSA',
+        key_length=2048,
+        name_real='TeamOne',
+        name_email='teamone@teamone.com',
+        passphrase='teamone')
+ 
+        # Generate a GPG key
+        key = gpg.gen_key(input_data)
+        # Export the key pair
+        ascii_armored_public_keys = gpg.export_keys(key)
+        ascii_armored_private_keys = gpg.export_keys(key, True)
+
+        # Write the exported key pair to files
+        with open('./teamone.pub', 'w') as f:
+            f.write(ascii_armored_public_keys)
+        with open('./teamone.key', 'w') as f:
+            f.write(ascii_armored_private_keys)
+    else:
+        print ("Server key is already generated.")
 
 # Check if the registered githubId
 def check_registered(github_id):
-    with open("../github_id.list") as file:
+    with open("./github_id.list") as file:
          for id in file:
              id = id.strip()
              id_list.append(id)
@@ -41,7 +65,11 @@ def generate_challenge(github_id):
     print ("%s" % hex(rand)) # FIXME - DEBUG
     
     # Import a public key from a certificate file
-    key_data = open('../pubkeys/%s.pub' % github_id).read()
+    if __name__ == "__main__": # FIXME - TEST
+        key_data = open('./teamone.pub').read()
+    else:
+        key_data = open('./pubkeys/%s.pub' % github_id).read()
+
     pubkey = gpg.import_keys(key_data)
 
     # Encrypt the generated random using the imported public key
@@ -54,10 +82,13 @@ def generate_challenge(github_id):
 if __name__ == "__main__":
     # Get an input from the command line
     input_id = str(sys.argv[1]) 
- 
+
+    # Initialize GPG & generate a server key 
+    initialize_gpg()
+    generate_server_key()
+
     if(check_registered(input_id)):
        if(check_already_registered(input_id)):
-           initialize_gpg()
            generate_challenge(input_id)
        else:
            print ("%s is already registered!" % input_id)
