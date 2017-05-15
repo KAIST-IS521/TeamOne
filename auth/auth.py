@@ -75,6 +75,15 @@ def generate_challenge(github_id):
     print ("\nEncrypted: \n%s" % encrypted_string) # FIXME - DEBUG
     return encrypted_string
 
+# Verify the response from the user
+def verify_response(github_id, encrypted_string):
+    decrypted_data = gpg.decrypt(encrypted_string, passphrase='teamone')
+    
+    print ("ok: %s" % decrypted_data.ok)
+    print ("decrypted_string: %s" % str(decrypted_data))
+
+    # TODO - check if the decrypted random number is matched with the generated one
+
 # Main for testing
 if __name__ == "__main__":
     # Get an input from the command line
@@ -86,7 +95,7 @@ if __name__ == "__main__":
 
     if(check_registered(input_id)):
        if(check_already_registered(input_id)):
-           generate_challenge(input_id)
+           verify_response(input_id, generate_challenge(input_id))
        else:
            print ("%s is already registered!" % input_id)
     else:
