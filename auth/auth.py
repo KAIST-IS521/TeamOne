@@ -30,13 +30,10 @@ def generate_server_key():
         key = gpg.gen_key(input_data)
         # Export the key pair
         ascii_armored_public_keys = gpg.export_keys(key)
-        ascii_armored_private_keys = gpg.export_keys(key, True)
 
-        # Write the exported key pair to files
+        # Write the exported public key to a file
         with open('./teamone.pub', 'w') as f:
             f.write(ascii_armored_public_keys)
-        with open('./teamone.key', 'w') as f:
-            f.write(ascii_armored_private_keys)
     else:
         print ("Server key is already generated.")
 
