@@ -29,6 +29,20 @@ class bankDB:
             if result: return True
             else: return False
 
+    def store_user(self, user_id, user_pw, account_num, github_id, 
+                   email, mobile, balance):
+        with self.conn.cursor() as cursor:
+            sql = "INSERT INTO user_table(user_id, user_pw, account_num, \
+                   github_id, email, mobile, balance) \
+                   VALUES(%s, %s, %s, %s, %s, %s, %s)"
+            try:
+                cursor.execute(sql, (user_id, user_pw, account_num, github_id, 
+                                     email, mobile, balance))
+                self.conn.commit()
+                return True
+            except:
+                return False
+
     def get_balance(self, user_id):
         with self.conn.cursor() as cursor:
             sql = "SELECT `balance` FROM `user_table` WHERE `user_id`=%s"
