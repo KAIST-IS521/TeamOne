@@ -15,14 +15,23 @@ def initialize_gpg():
 
 def saveflag(recvdata):
     jd = json.loads(recvdata)
-    print(jd['signer'])
-    print(jd['newflag'])
-    print(jd['signature'])
+#    print(jd['signer'])
+#    print(jd['newflag'])
+#    print(jd['signature'])
 
     sign = base64.b64decode(jd['signature']);
     data = jd['signer']+':'+jd['newflag'];
 
-    verified = gpg.verify_data(sign, data)
+    with open("/home/vagrant/shared/teamone/msg.txt.sig.det", mode='rb') as file: # b is important -> binary
+        fileContent = file.read()
+
+#    fileContent = gpg.sign(data, default_key='TeamOne@hank.com', passphrase='qwer1234', clearsign=False)
+#    print(data)
+#    print(fileContent)
+#    verified = gpg.verify(fileContent)
+#    verified = gpg.verify_file("/home/vagrant/shared/teamone/msg.txt.sig.det", sig_file="/home/vagrant/shared/teamone/msg.txt")
+#    verified = gpg.verify_file("/home/vagrant/shared/teamone/msg.txt", sig_file="/home/vagrant/shared/teamone/msg.txt.sig.det")
+    verified = gpg.verify_data("/home/vagrant/shared/teamone/msg.txt.sig.det", data)
 
     if not verified:
         print("Invalid Update")
