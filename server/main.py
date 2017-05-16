@@ -30,7 +30,7 @@ def register(conn):
 
         if cnt == 1:
             # get password
-            pw = get_password(conn, name, init_msg)
+            pw = get_password(conn, init_msg, 0)
             init_msg += (b" * Password -> " + pw.encode() + b"\n")
             cnt += 1 # password OK
             continue
@@ -67,7 +67,7 @@ def register(conn):
                 errmsg = ERRMSG_PHONE_INVAL
             else:
                 phone = data
-                init_msg = (b" * Phone number (ex. 01x-xxxx-xxxx) -> " +
+                init_msg += (b" * Phone number (ex. 01x-xxxx-xxxx) -> " +
                         phone.encode() + b"\n")
                 break # all processes are done
     
@@ -115,6 +115,8 @@ def register(conn):
             conn.send(b" Enter any key to return to the previous menu -> ")
             data = recv_line(conn)
             return
+        else:
+            errmsg = ERRMSG_OPTION
 
 def get_username(conn, msg, flag):
     errmsg = ""
@@ -142,28 +144,6 @@ def get_username(conn, msg, flag):
         else:
             return data
 
-def get_password(conn, name, msg):
-    errmsg = ""
-
-    while True:
-        print_logo(conn)
-        conn.sendall(msg)
-
-        if errmsg:
-            conn.send(errmsg)
-
-        conn.send(b" * Password -> ")
-
-        # get password from user
-        data = recv_line(conn)
-        
-        if data == '':
-            errmsg = ERRMSG_PW_NULL
-        elif len(data) > LEN_PASSWORD:
-            errmsg = ERRMSG_PW_LEN
-        else:
-            return data
-
 def login(conn):
     # get & store username and password
     msg = (b" [ Login ]\n" +
@@ -171,7 +151,7 @@ def login(conn):
     name = get_username(conn, msg, 0)
 
     msg += (b" * Username -> " + bytes(name.encode()) + b"\n")
-    pw = get_password(conn, name, msg)
+    pw = get_password(conn, msg, 0)
 
     # TODO SQL request and confirm
 

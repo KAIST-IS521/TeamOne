@@ -23,3 +23,27 @@ def recv_line(conn):
             break
         data.append(byte)
     return b''.join(data).decode('utf-8')
+
+def get_password(conn, msg, flag):
+    errmsg = ""
+
+    while True:
+        print_logo(conn)
+        conn.sendall(msg)
+
+        if errmsg:
+            conn.send(errmsg)
+        if flag == 0:
+            conn.send(b" * Password -> ")
+        elif flag == 1:
+            conn.send(b" * New Password -> ")
+
+        # get password from user
+        data = recv_line(conn)
+        
+        if data == '':
+            errmsg = ERRMSG_PW_NULL
+        elif len(data) > LEN_PASSWORD:
+            errmsg = ERRMSG_PW_LEN
+        else:
+            return data
