@@ -39,7 +39,7 @@ def generate_server_key():
 
 # Check if the registered githubId
 def check_registered(github_id):
-    with open("./github_id.list") as file:
+    with open("./db/github_id.list") as file:
          for id in file:
              id = id.strip()
              id_list.append(id)
@@ -65,7 +65,7 @@ def generate_challenge(github_id):
     if __name__ == "__main__": # FIXME - TEST
         key_data = open('./teamone.pub').read()
     else:
-        key_data = open('./pubkeys/%s.pub' % github_id).read()
+        key_data = open('./db/pubkeys/%s.pub' % github_id).read()
 
     pubkey = gpg.import_keys(key_data)
 
