@@ -1,7 +1,10 @@
 REGEX_USERNAME = '^[A-Za-z0-9]{,20}$' # TODO: should be changed based on MySQL
 #REGEX_PASSWORD = '' # TODO: should be changed based on MySQL
+REGEX_EMAIL = '(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)'
+REGEX_PHONE = '^\d{3}-\d{3,4}-\d{4}$'
 REGEX_AMOUNT = '^[0-9]*$' 
 LEN_PASSWORD = 20 # TODO: should be changed based on MySQL
+LEN_EMAIL = 45
 
 CLEAR_TERMINAL = b"\x1b[2J\x1b[H"
 
@@ -28,3 +31,11 @@ ERRMSG_RECV_INVAL = COR_ERRMSG + b" Invalid receiver.\n" + COR_BASE
 
 ERRMSG_WON_NULL = COR_ERRMSG + b" Please input amount to transfer.\n" + COR_BASE
 ERRMSG_WON_INVAL = COR_ERRMSG + b" Invalid amount.\n" + COR_BASE
+
+ERRMSG_EMAIL_NULL = COR_ERRMSG +  b" Please input the email.\n" + COR_BASE
+ERRMSG_EMAIL_INVAL = COR_ERRMSG + b" Invalid email.\n" + COR_BASE
+ERRMSG_EMAIL_LEN = (COR_ERRMSG + b" Email should be shorter than " + 
+                    bytes(str(LEN_EMAIL).encode()) + b".\n" + COR_BASE)
+
+ERRMSG_PHONE_NULL = COR_ERRMSG +  b" Please input the phone number.\n" + COR_BASE
+ERRMSG_PHONE_INVAL = COR_ERRMSG + b" Invalid phone number.\n" + COR_BASE

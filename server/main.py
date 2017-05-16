@@ -7,13 +7,121 @@ from history import *
 from transfer import *
 from mypage import *
 
-def get_username(conn):
+def register(conn):
+    init_msg = (b" [ Register ]\n" +
+                b" Please input the following information.\n\n")
+    errmsg = ""
+    cnt = 0 # count for register process
+
+    while True:
+        print_logo(conn)
+        conn.sendall(init_msg)
+
+        if errmsg:
+            conn.send(errmsg)
+        errmsg = ""
+        
+        if cnt == 0:
+            # get user name
+            name = get_username(conn, init_msg, 1)
+            init_msg += (b" * Username -> " + name.encode() + b"\n")
+            cnt += 1 # username OK
+            continue
+
+        if cnt == 1:
+            # get password
+            pw = get_password(conn, name, init_msg)
+            init_msg += (b" * Password -> " + pw.encode() + b"\n")
+            cnt += 1 # password OK
+            continue
+
+        if cnt == 2:
+            # get email
+            conn.sendall(b" * Email -> ")
+            data = recv_line(conn)
+            
+            regex = re.compile(REGEX_EMAIL)
+
+            if data == '':
+                errmsg = ERRMSG_EMAIL_NULL
+            elif len(data) > 45:
+                errmsg = ERRMSG_EMAIL_LEN
+            elif regex.match(data) == None:
+                errmsg = ERRMSG_EMAIL_INVAL
+            else:
+                email = data
+                init_msg += (b" * Email -> " + email.encode() + b"\n")
+                cnt += 1 # email OK
+            continue
+
+        if cnt == 3:
+            # get phone number
+            conn.sendall(b" * Phone number (ex. 01x-xxxx-xxxx) -> ")
+            data = recv_line(conn)
+
+            regex = re.compile(REGEX_PHONE)
+
+            if data == '':
+                errmsg = ERRMSG_PHONE_NULL
+            elif regex.match(data) == None:
+                errmsg = ERRMSG_PHONE_INVAL
+            else:
+                phone = data
+                init_msg = (b" * Phone number (ex. 01x-xxxx-xxxx) -> " +
+                        phone.encode() + b"\n")
+                break # all processes are done
+    
+    errmsg = ""
+    while True:
+        # TODO: get balance
+        balance = 0
+
+        # show entered user information & welcome
+        print_logo(conn)
+        conn.sendall(b" [ Register ] \n" + 
+                     b" Your entered information are as follows.\n\n" +
+                     COR_RESULT +
+                     b" # Username: " + name.encode() + b"\n" +
+                     b" # Password: " + pw.encode() + b"\n" +
+                     b" # Email: " + email.encode() + b"\n" +
+                     b" # Phone number: " + phone.encode() + b"\n" +
+                     b" # Balance: " + str(balance).encode() + b" Won\n\n" +
+                     COR_BASE)
+        if errmsg:
+            conn.send(errmsg)
+        errmsg = ""
+        
+        conn.send(b" Would you like to register? (Y/N) -> ")
+        
+        # get input from user
+        data = recv_line(conn)
+        data = data.upper()
+
+        # Y -> do register
+        if data == 'Y':
+            # TODO: store entered information in DB 
+            conn.sendall(COR_SUCCESS +
+                    b"\n ** Register complete successfully! **\n\n" + COR_BASE)
+            
+            conn.send(b" Enter any key to return to the previous menu -> ")
+            data = recv_line(conn)
+            return
+
+        # N -> calcel the register
+        elif data == 'N':
+            conn.sendall(COR_ERRMSG +
+                    b"\n ** Register Canceled **\n\n" + COR_BASE)
+            
+            conn.send(b" Enter any key to return to the previous menu -> ")
+            data = recv_line(conn)
+            return
+
+def get_username(conn, msg, flag):
     errmsg = ""
 
     while True:
         print_logo(conn)
-        conn.sendall(b" [ Login ]\n" +
-                     b" Please input username and password. \n\n")
+        conn.sendall(msg)
 
         if errmsg:
             conn.send(errmsg)
@@ -30,17 +138,17 @@ def get_username(conn):
             errmsg = ERRMSG_USER_NULL
         elif regex.match(data) == None:
             errmsg = ERRMSG_USER_INVAL
+        # TODO: if flag==1 -> is existing user(data)
         else:
             return data
 
-def get_password(conn, name):
+def get_password(conn, name, msg):
     errmsg = ""
 
     while True:
         print_logo(conn)
-        conn.sendall(b" [ Login ]\n" +
-                     b" Please input username and password. \n\n" +
-                     b" * Username -> " + bytes(name.encode()) + b"\n")
+        conn.sendall(msg)
+
         if errmsg:
             conn.send(errmsg)
 
@@ -57,10 +165,13 @@ def get_password(conn, name):
             return data
 
 def login(conn):
-
     # get & store username and password
-    name = get_username(conn)
-    pw = get_password(conn, name)
+    msg = (b" [ Login ]\n" +
+           b" Please input username and password. \n\n")
+    name = get_username(conn, msg, 0)
+
+    msg += (b" * Username -> " + bytes(name.encode()) + b"\n")
+    pw = get_password(conn, name, msg)
 
     # TODO SQL request and confirm
 
@@ -129,7 +240,7 @@ def get_main_menu(conn, addr):
             login(conn)
 
         elif data == '2':
-            print("register")
+            register(conn)
 
         elif data == '3': # terminate program
             # close the connection
@@ -145,11 +256,12 @@ def handler(conn, addr):
     try:
         get_main_menu(conn, addr)
 
-    except:
+    except Exception as e:
         # Close the connection
         conn.send(COR_DEFAULT) # colored white(normal)
         conn.close()
         print("[Error] " + addr[0] + " closed.")
+        print(e)
 
 def server():
     thread_list = []
