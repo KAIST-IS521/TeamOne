@@ -9,7 +9,8 @@ class bankDB:
             localhost, root, ~
         '''
         self.conn = pymysql.connect(host, user, password, 'bankDB', 
-                                    cursorclass=pymysql.cursors.DictCursor)
+                                    cursorclass=pymysql.cursors.DictCursor,
+                                    autocommit=True)
 
     
     def match_id_pw(self, user_id, user_pw):
