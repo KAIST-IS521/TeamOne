@@ -8,13 +8,23 @@ class bankDB:
         '''
             localhost, root, ~
         '''
-        self.conn = pymysql.connect(host, user, password, 'bankDB', cursorclass=pymysql.cursors.DictCursor)
+        self.conn = pymysql.connect(host, user, password, 'bankDB', 
+                                    cursorclass=pymysql.cursors.DictCursor)
 
     
     def match_id_pw(self, user_id, user_pw):
         with self.conn.cursor() as cursor:
-            sql = "SELECT * FROM `user_table` WHERE `user_id`=%s AND `user_pw`=%s"
+            sql = "SELECT * FROM `user_table` WHERE `user_id`=%s \
+                   AND `user_pw`=%s"
             cursor.execute(sql, (user_id, user_pw))
+            result = cursor.fetchone()
+            if result: return True
+            else: return False
+
+    def is_existing_id(self, inputted_id):
+        with self.conn.cursor() as cursor:
+            sql = "SELECT * FROM user_table WHERE user_id = %s"
+            cursor.execute(sql, (inputted_id, ))
             result = cursor.fetchone()
             if result: return True
             else: return False
