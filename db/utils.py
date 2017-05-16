@@ -39,10 +39,65 @@ class bankDB:
             try:
                 cursor.execute(sql, (user_id, user_pw, account_num, github_id, 
                                      email, mobile, balance))
-                self.conn.commit()
+            except:
+                return False
+
+    def get_every_user_info(self, user_id):
+        with self.conn.cursor() as cursor:
+            sql = "SELECT user_pw, account_num, github_id, email, mobile \
+                   FROM user_table WHERE user_id = %s"
+            cursor.execute(sql, (user_id, ))
+            result = cursor.fetchone()
+            if not result:
+                return False
+            else:
+                return result
+
+    def store_user_info_modification(self, user_id, info):
+        with self.conn.cursor() as cursor:
+            user_pw = info['user_pw']
+            account_num = info['account_num']
+            github_id = info['github_id']
+            email = info['email']
+            mobile = info['mobile']
+
+            sql = "UPDATE user_table \
+                   SET user_pw = %s, account_num = %s, github_id = %s, \
+                       email = %s, mobile = %s \
+                   WHERE user_id = %s"
+            try:
+                cursor.execute(sql, (user_pw, account_num, github_id, 
+                                     email, mobile, user_id))
                 return True
             except:
                 return False
+
+    def remove_user_account(self, user_id):
+        with self.conn.cursor() as cursor:
+            sql = "SELECT account_num, github_id FROM user_table WHERE user_id = %s"
+            cursor.execute(sql, (user_id, ))
+            info = cursor.fetchone()
+            if not info:
+                return False
+
+            account_num = info['account_num']
+            github_id = info['github_id']
+
+            sql = "DELETE FROM user_table WHERE user_id = %s"
+            try:
+                cursor.execute(sql, (user_id, ))
+            except:
+                return False
+            
+            sql = "INSERT INTO withdraw_account_table(user_id, account_num, \
+                                                      github_id) \
+                   VALUES(%s, %s, %s)"
+            try:
+                cursor.execute(sql, (user_id, account_num, github_id))
+                return True
+            except:
+                return False
+
 
     def get_balance(self, user_id):
         with self.conn.cursor() as cursor:
