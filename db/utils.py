@@ -29,3 +29,11 @@ class bankDB:
             if result: return True
             else: return False
 
+    def get_balance(self, user_id):
+        with self.conn.cursor() as cursor:
+            sql = "SELECT `balance` FROM `user_table` WHERE `user_id`=%s"
+            cursor.execute(sql, (user_id, ))
+            result = cursor.fetchone()
+            if not result: return False # No such user
+            return result['balance']
+
