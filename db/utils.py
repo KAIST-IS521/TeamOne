@@ -40,14 +40,14 @@ class bankDB:
             return result['account_num']
 
 
-    def store_user(self, user_id, user_pw, account_num, github_id, 
+    def store_user(self, user_id, user_pw, github_id, 
                    email, mobile, balance):
         with self.conn.cursor() as cursor:
-            sql = "INSERT INTO user_table(user_id, user_pw, account_num, \
+            sql = "INSERT INTO user_table(user_id, user_pw, \
                    github_id, email, mobile, balance) \
-                   VALUES(%s, %s, %s, %s, %s, %s, %s)"
+                   VALUES(%s, %s, %s, %s, %s, %s)"
             try:
-                cursor.execute(sql, (user_id, user_pw, account_num, github_id, 
+                cursor.execute(sql, (user_id, user_pw, github_id, 
                                      email, mobile, balance))
             except:
                 return False
