@@ -107,3 +107,27 @@ class bankDB:
             if not result: return False # No such user
             return result['balance']
 
+    def get_account_num(self, user_id):
+        with self.conn.cursor() as cursor:
+            sql = "SELECT `account_num` FROM `user_table` \
+                   WHERE `user_id`=%s"
+            cursor.execute(sql, (user_id, ))
+            result = cursor.fetchone()
+            if not result: return False
+            else: return result['account_num']
+
+    def get_all_transaction(self, user_id):
+        with self.conn.cursor() as cursor:
+            account_num = self.get_account_num(user_id)
+            if not account_num:
+                return False
+            sql = "SELECT tr_time, from_account, to_account, \
+                   remit, msg FROM tran_table \
+                   WHERE from_account = %s OR to_account = %s \
+                   ORDER BY tr_time"
+            cursor.execute(sql, (account_num, account_num))
+            result = cursor.fetchall()
+            return result
+
+    def close_conn(self):
+        self.conn.close()
