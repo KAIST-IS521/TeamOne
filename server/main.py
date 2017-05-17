@@ -6,8 +6,10 @@ from balance import *
 from history import *
 from transfer import *
 from mypage import *
+sys.path.insert(0, '../db')
+import utils
 
-def register(conn):
+def register(conn, obj):
     init_msg = (b" [ Register ]\n" +
                 b" Please input the following information.\n\n")
     errmsg = ""
@@ -144,7 +146,7 @@ def get_username(conn, msg, flag):
         else:
             return data
 
-def login(conn):
+def login(conn, obj):
     # get & store username and password
     msg = (b" [ Login ]\n" +
            b" Please input username and password. \n\n")
@@ -153,11 +155,15 @@ def login(conn):
     msg += (b" * Username -> " + bytes(name.encode()) + b"\n")
     pw = get_password(conn, msg, 0)
 
-    # TODO SQL request and confirm
+    # SQL request and confirm
+    ret = obj.match_id_pw(name, pw)
 
-    # TODO add UI for login fail
+    if ret == True:
+        get_user_menu(conn, name)
+    else:
+        # TODO add UI for login fail
+        print("fail to login")
 
-    get_user_menu(conn, name)
 
 def get_user_menu(conn, user):
     errmsg = ""
@@ -196,7 +202,7 @@ def get_user_menu(conn, user):
         else:
             errmsg = ERRMSG_OPTION
 
-def get_main_menu(conn, addr):
+def get_main_menu(conn, addr, obj):
     errmsg = ""
 
     while True:
@@ -217,10 +223,10 @@ def get_main_menu(conn, addr):
         data = recv_line(conn)
         
         if data == '1':
-            login(conn)
+            login(conn, obj)
 
         elif data == '2':
-            register(conn)
+            register(conn, obj)
 
         elif data == '3': # terminate program
             # close the connection
@@ -234,7 +240,8 @@ def get_main_menu(conn, addr):
 
 def handler(conn, addr):
     try:
-        get_main_menu(conn, addr)
+        obj = utils.bankDB()
+        get_main_menu(conn, addr, obj)
 
     except Exception as e:
         # Close the connection
