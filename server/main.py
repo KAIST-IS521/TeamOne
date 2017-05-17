@@ -1,4 +1,5 @@
-import socket, sys, re
+import socket, sys, re, base64
+sys.path.append('/home/vagrant/TeamOne/auth')
 from threading import Thread
 from const import *
 from util import *
@@ -6,6 +7,56 @@ from balance import *
 from history import *
 from transfer import *
 from mypage import *
+from auth import *
+
+# PGP-authentication for registration
+def pgp_auth(conn):
+    init_msg = (b" [ PGP Authentication ]\n" +
+                b" Please input the following information.\n\n")
+    errmsg = ""
+
+    # Get github_id 
+    while True:
+        print_logo(conn)
+        conn.sendall(init_msg)
+
+        if errmsg:
+           conn.send(errmsg)
+        errmg = ""
+
+        # get github id from user
+        github_id = get_github_id(conn, init_msg, 1)
+        init_msg += (b" * GitHub ID -> " + github_id.encode() + b"\n")
+    
+        # Initialize GPG
+        initialize_gpg()
+
+        # Check if the inputted github ID is valid
+        if(check_registered(github_id)):
+            # Generate random
+            rand = generate_random(github_id)
+       
+            # Generate challenge for the given github_id
+            challenge = generate_challenge(github_id, rand)
+	
+	    # Send challenge and receive the response from the user
+            response = get_response(conn, challenge, 1)
+     
+            # Decrypt the encrypted random
+            decoded_response = base64.b64decode(response)
+            decrypted_rand = verify_response(github_id, decoded_response)        
+
+            # Check if the sent and received random is identical
+            if(hex(rand) == decrypted_rand):
+                register(conn)
+                break
+            else:
+                init_msg += (b"PGP authentication failed!\n\n")
+                continue 
+          
+        else:
+            init_msg += (b"GitHub ID is NOT registered!\n\n")
+            continue
 
 def register(conn):
     init_msg = (b" [ Register ]\n" +
@@ -118,6 +169,51 @@ def register(conn):
         else:
             errmsg = ERRMSG_OPTION
 
+# Get response from user for PGP authentication
+def get_response(conn, msg, flag):
+    errmsg = ""
+
+    while True:
+        print_logo(conn)
+        conn.sendall(msg)
+
+        if errmsg:
+            conn.send(errmsg)
+
+        conn.send(b"\n * Encrypted response -> ")
+
+        # get github id from user
+        data = recv_line(conn)
+
+        return data
+
+# get github ID from user for PGP authentication
+def get_github_id(conn, msg, flag):
+    errmsg = ""
+
+    while True:
+        print_logo(conn)
+        conn.sendall(msg)
+
+        if errmsg:
+            conn.send(errmsg)
+
+        conn.send(b" * GitHub ID -> ")
+
+        # get github id from user
+        data = recv_line(conn)
+
+        # ID : lowerletter, upperletter, number
+        regex = re.compile(REGEX_USERNAME)
+
+        if data == '':
+            errmsg = ERRMSG_USER_NULL
+        elif regex.match(data) == None:
+            errmsg = ERRMSG_USER_INVAL
+        # TODO: if flag==1 -> is existing user(data)
+        else:
+            return data
+
 def get_username(conn, msg, flag):
     errmsg = ""
 
@@ -220,7 +316,7 @@ def get_main_menu(conn, addr):
             login(conn)
 
         elif data == '2':
-            register(conn)
+            pgp_auth(conn)
 
         elif data == '3': # terminate program
             # close the connection

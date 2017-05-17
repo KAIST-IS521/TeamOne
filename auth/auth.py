@@ -2,8 +2,7 @@ import gnupg
 import random
 import sys
 import os
-
-from pprint import pprint
+import base64
 
 # global variable
 id_list = []
@@ -16,26 +15,6 @@ def initialize_gpg():
         gpg = gnupg.GPG(gnupghome=homedir) 
     except TypeError:
         gpg = gnupg.GPG(homedir=homedir)
-# Generate a server key
-def generate_server_key():
-    if not os.path.exists('./teamone.pub'):
-        input_data = gpg.gen_key_input(
-        key_type='RSA',
-        key_length=2048,
-        name_real='TeamOne',
-        name_email='teamone@teamone.com',
-        passphrase='teamone')
- 
-        # Generate a GPG key
-        key = gpg.gen_key(input_data)
-        # Export the key pair
-        ascii_armored_public_keys = gpg.export_keys(key)
-
-        # Write the exported public key to a file
-        with open('./teamone.pub', 'w') as f:
-            f.write(ascii_armored_public_keys)
-    else:
-        print ("Server key is already generated.")
 
 # Check if the registered githubId
 def check_registered(github_id):
@@ -52,18 +31,13 @@ def check_already_registered(github_id):
 
 # Generate a big random number (256-bit)
 def generate_random(github_id):
-    print ("Generate a random number for %s" %  github_id)
     return random.getrandbits(256)
 
 # Generate a challenge (encrypted random)
-def generate_challenge(github_id):
-    # Generate a random number for a given githubId
-    rand = generate_random(github_id)
-    print ("%s" % hex(rand)) # FIXME - DEBUG
-    
+def generate_challenge(github_id, rand):
     # Import a public key from a certificate file
     if __name__ == "__main__": # FIXME - TEST
-        key_data = open('./teamone.pub').read()
+        key_data = open('./server.pub').read()
     else:
         key_data = open('./db/pubkeys/%s.pub' % github_id).read()
 
@@ -72,17 +46,29 @@ def generate_challenge(github_id):
     # Encrypt the generated random using the imported public key
     encrypted_data = gpg.encrypt(hex(rand), pubkey.fingerprints[0])
     encrypted_string = str(encrypted_data)
-    print ("\nEncrypted: \n%s" % encrypted_string) # FIXME - DEBUG
-    return encrypted_string
+
+    # Form the return string
+    challenge = encrypted_string + key_data
+    encoded_challenge = base64.b64encode(challenge.encode())
+
+    return encoded_challenge
 
 # Verify the response from the user
 def verify_response(github_id, encrypted_string):
-    decrypted_data = gpg.decrypt(encrypted_string, passphrase='teamone')
-    
-    print ("ok: %s" % decrypted_data.ok)
-    print ("decrypted_string: %s" % str(decrypted_data))
+    decrypted_data = gpg.decrypt(encrypted_string, passphrase='TeamOne') # FIXME
 
-    # TODO - check if the decrypted random number is matched with the generated one
+    if(decrypted_data.ok != True):
+        return  
+ 
+    return str(decrypted_data)   
+
+# Split the challenge (For testing)
+def split_challenge(decoded_challenge):
+    challenge = decoded_challenge.split(b'-----BEGIN PGP PUBLIC KEY BLOCK-----')
+    
+    challenge[1] = b'-----BEGIN PGP PUBLIC KEY BLOCK-----' + challenge[1]
+
+    return challenge
 
 # Main for testing
 if __name__ == "__main__":
@@ -91,11 +77,19 @@ if __name__ == "__main__":
 
     # Initialize GPG & generate a server key 
     initialize_gpg()
-    generate_server_key()
 
     if(check_registered(input_id)):
        if(check_already_registered(input_id)):
-           verify_response(input_id, generate_challenge(input_id))
+           rand = generate_random(input_id)
+           encoded_challenge = generate_challenge(input_id, rand)
+           decoded_challenge = base64.b64decode(encoded_challenge)
+      
+           # split decoded challenge into encrypted and pubkey
+           challenge = split_challenge(decoded_challenge)
+           print (challenge[0])
+
+           # decrypt the encrpted part
+           verify_response(input_id, challenge[0])
        else:
            print ("%s is already registered!" % input_id)
     else:
