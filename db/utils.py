@@ -30,6 +30,16 @@ class bankDB:
             if result: return True
             else: return False
 
+    def get_account_num(self, user_id):
+        with self.conn.cursor() as cursor:
+            sql = "SELECT `account_num` FROM `user_table` \
+                   WHERE `user_id`=%s"
+            cursor.execute(sql, (user_id, ))
+            result = cursor.fetchone()
+            if not result: return False
+            return result['account_num']
+
+
     def store_user(self, user_id, user_pw, account_num, github_id, 
                    email, mobile, balance):
         with self.conn.cursor() as cursor:
@@ -98,7 +108,6 @@ class bankDB:
             except:
                 return False
 
-
     def get_balance(self, user_id):
         with self.conn.cursor() as cursor:
             sql = "SELECT `balance` FROM `user_table` WHERE `user_id`=%s"
@@ -106,4 +115,43 @@ class bankDB:
             result = cursor.fetchone()
             if not result: return False # No such user
             return result['balance']
+    
+    def is_valid_receiver(self, account_num):
+        with self.conn.cursor() as cursor:
+            sql = "SELECT * FROM `user_table` WHERE `account_num`=%s"
+            cursor.execute(sql, (account_num, ))
+            result = cursor.fetchone()
+            if not result: return False # No such user
+            return True
+
+    def update_balance(self, account_num, change):
+        '''
+        positive change => ADD to banalce
+        negative change => SUBTRACT from balance
+        '''
+        with self.conn.cursor() as cursor:
+            sql = "UPDATE `user_table` SET `balance`=`balance` + %s " \
+                  "WHERE `account_num`=%s"
+            try:
+                cursor.execute(sql, (change, account_num))
+            except:
+                return False
+            return True
+
+    def store_transaction(self, user_id, receiver, amount, msg):
+        with self.conn.cursor() as cursor:
+            sender = self.get_account_num(user_id)
+            if not self.update_balance(sender, -amount):
+                # unable to send due to lack of balance
+                return False
+            self.update_balance(receiver, amount)
+
+            sql = "INSERT INTO `tran_table` " \
+                  "(`from_account`, `to_account`, `remit`, `msg`) " \
+                  "VALUES(%s, %s, %s, %s)"
+            try:
+                cursor.execute(sql, (sender, receiver, amount, msg))
+                return True
+            except:
+                return False
 
