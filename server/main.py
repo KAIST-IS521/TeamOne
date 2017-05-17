@@ -9,8 +9,11 @@ from transfer import *
 from mypage import *
 from auth import *
 
+sys.path.insert(0, '../db')
+import utils
+
 # PGP-authentication for registration
-def pgp_auth(conn):
+def pgp_auth(conn, obj):
     init_msg = (b" [ PGP Authentication ]\n" +
                 b" Please input the following information.\n\n")
     errmsg = ""
@@ -48,7 +51,7 @@ def pgp_auth(conn):
 
             # Check if the sent and received random is identical
             if(hex(rand) == decrypted_rand):
-                register(conn)
+                register(conn, obj)
                 break
             else:
                 init_msg += (b"PGP authentication failed!\n\n")
@@ -58,7 +61,7 @@ def pgp_auth(conn):
             init_msg += (b"GitHub ID is NOT registered!\n\n")
             continue
 
-def register(conn):
+def register(conn, obj):
     init_msg = (b" [ Register ]\n" +
                 b" Please input the following information.\n\n")
     errmsg = ""
@@ -240,7 +243,7 @@ def get_username(conn, msg, flag):
         else:
             return data
 
-def login(conn):
+def login(conn, obj):
     # get & store username and password
     msg = (b" [ Login ]\n" +
            b" Please input username and password. \n\n")
@@ -249,13 +252,17 @@ def login(conn):
     msg += (b" * Username -> " + bytes(name.encode()) + b"\n")
     pw = get_password(conn, msg, 0)
 
-    # TODO SQL request and confirm
+    # SQL request and confirm
+    ret = obj.match_id_pw(name, pw)
 
-    # TODO add UI for login fail
+    if ret == True:
+        get_user_menu(conn, name, obj)
+    else:
+        # TODO add UI for login fail
+        print("fail to login")
 
-    get_user_menu(conn, name)
 
-def get_user_menu(conn, user):
+def get_user_menu(conn, user, obj):
     errmsg = ""
 
     while True:
@@ -279,20 +286,26 @@ def get_user_menu(conn, user):
         data = recv_line(conn)
 
         if data == '1':
-            user_check_balance(conn, user)
+            user_check_balance(conn, user, obj)
+
         elif data == '2':
-            user_check_history(conn, user)
+            user_check_history(conn, user, obj)
+
         elif data == '3':
-            user_transfer(conn, user)
+            user_transfer(conn, user, obj)
+
         elif data == '4':
-            ret = user_mypage(conn, user)
-            if ret == 1: return # if user remove account -> go to main
+            ret = user_mypage(conn, user, obj)
+            # if user remove account or change password -> go to main
+            if ret == 1: return 
+
         elif data == '5': # logout -> go to main
             return
+
         else:
             errmsg = ERRMSG_OPTION
 
-def get_main_menu(conn, addr):
+def get_main_menu(conn, addr, obj):
     errmsg = ""
 
     while True:
@@ -313,10 +326,10 @@ def get_main_menu(conn, addr):
         data = recv_line(conn)
         
         if data == '1':
-            login(conn)
+            login(conn, obj)
 
         elif data == '2':
-            pgp_auth(conn)
+            pgp_auth(conn, obj)
 
         elif data == '3': # terminate program
             # close the connection
@@ -330,7 +343,8 @@ def get_main_menu(conn, addr):
 
 def handler(conn, addr):
     try:
-        get_main_menu(conn, addr)
+        obj = utils.bankDB()
+        get_main_menu(conn, addr, obj)
 
     except Exception as e:
         # Close the connection
