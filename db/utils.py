@@ -98,7 +98,6 @@ class bankDB:
             except:
                 return False
 
-
     def get_balance(self, user_id):
         with self.conn.cursor() as cursor:
             sql = "SELECT `balance` FROM `user_table` WHERE `user_id`=%s"
@@ -106,4 +105,12 @@ class bankDB:
             result = cursor.fetchone()
             if not result: return False # No such user
             return result['balance']
+    
+    def is_valid_receiver(self, account_num):
+        with self.conn.cursor() as cursor:
+            sql = "SELECT * FROM `user_table` WHERE `account_num`=%s"
+            cursor.execute(sql, (account_num, ))
+            result = cursor.fetchone()
+            if not result: return False # No such user
+            return True
 
