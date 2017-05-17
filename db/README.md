@@ -1,8 +1,8 @@
 # Database
 
 ## `EER diagram`
-This is the EER diagram of bankDB(1.0.1).
-![Image of bankDB](./ref_image/db_schema_1.0.1.png)
+This is the EER diagram of bankDB(1.1).
+![Image of bankDB](./ref_image/db_schema_1.1.png)
 
 ## test database
 You can use test database in `db` directory by typing follwing command:
