@@ -1,8 +1,8 @@
 from util import *
 
-def user_check_balance(conn, user):
-    # TODO: SQL request and get balance
-    balance = 0
+def user_check_balance(conn, user, obj):
+    # get user's balance from DB
+    balance = obj.get_balance(user)
 
     print_logo(conn)
     conn.sendall(b" [ Check Balance ]\n" +

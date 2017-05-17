@@ -159,13 +159,13 @@ def login(conn, obj):
     ret = obj.match_id_pw(name, pw)
 
     if ret == True:
-        get_user_menu(conn, name)
+        get_user_menu(conn, name, obj)
     else:
         # TODO add UI for login fail
         print("fail to login")
 
 
-def get_user_menu(conn, user):
+def get_user_menu(conn, user, obj):
     errmsg = ""
 
     while True:
@@ -189,16 +189,22 @@ def get_user_menu(conn, user):
         data = recv_line(conn)
 
         if data == '1':
-            user_check_balance(conn, user)
+            user_check_balance(conn, user, obj)
+
         elif data == '2':
-            user_check_history(conn, user)
+            user_check_history(conn, user, obj)
+
         elif data == '3':
-            user_transfer(conn, user)
+            user_transfer(conn, user, obj)
+
         elif data == '4':
-            ret = user_mypage(conn, user)
-            if ret == 1: return # if user remove account -> go to main
+            ret = user_mypage(conn, user, obj)
+            # if user remove account or change password -> go to main
+            if ret == 1: return 
+
         elif data == '5': # logout -> go to main
             return
+
         else:
             errmsg = ERRMSG_OPTION
 
