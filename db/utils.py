@@ -30,6 +30,16 @@ class bankDB:
             if result: return True
             else: return False
 
+    def get_account_num(self, user_id):
+        with self.conn.cursor() as cursor:
+            sql = "SELECT `account_num` FROM `user_table` \
+                   WHERE `user_id`=%s"
+            cursor.execute(sql, (user_id, ))
+            result = cursor.fetchone()
+            if not result: return False
+            return result['account_num']
+
+
     def store_user(self, user_id, user_pw, account_num, github_id, 
                    email, mobile, balance):
         with self.conn.cursor() as cursor:
