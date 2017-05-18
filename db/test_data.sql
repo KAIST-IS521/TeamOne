@@ -6,13 +6,13 @@ DELETE FROM `user_table`;
 
 INSERT INTO `auth_table` VALUES(
     'test',
-    'DUMMY KEY', 
     1
     );
 
-INSERT INTO `user_table` VALUES(
+INSERT INTO `user_table`
+(`user_id`, `user_pw`,
+ `email`, `mobile`, `balance`, `github_id`) VALUES(
     'test1',
-    0,
     'test',
     'test@test.com',
     '01012341234',
@@ -20,7 +20,6 @@ INSERT INTO `user_table` VALUES(
     'test'
 ), (
     'test2',
-    1,
     'test',
     'test@test.com',
     '01012341234',
