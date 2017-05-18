@@ -1,7 +1,7 @@
 # Database
 
 ## `EER diagram`
-This is the EER diagram of bankDB(1.1).
+This is the EER diagram of bankDB(1.2).
 ![Image of bankDB](./ref_image/db_schema_1.2.png)
 
 ## test database
