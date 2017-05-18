@@ -9,6 +9,8 @@ mysql:
 	sudo pip3 install PyMySQL
 	sudo pip3 install tabulate
 	mysql -uroot -p${root_password} < create_bankdb.sql
+	./get_pubkey.sh
+	python3 reg_pubkey.py
 
 .PHONY: all mysql
 
