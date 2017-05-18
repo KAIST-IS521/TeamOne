@@ -244,23 +244,30 @@ def get_username(conn, msg, flag):
             return data
 
 def login(conn, obj):
-    # get & store username and password
-    msg = (b" [ Login ]\n" +
-           b" Please input username and password. \n\n")
-    name = get_username(conn, msg, 0)
+    errmsg = ""
 
-    msg += (b" * Username -> " + bytes(name.encode()) + b"\n")
-    pw = get_password(conn, msg, 0)
+    while True:
+        # get & store username and password
+        msg = (b" [ Login ]\n" + 
+               b" Please input username and password. \n\n")
 
-    # SQL request and confirm
-    ret = obj.match_id_pw(name, pw)
+        if errmsg:
+            msg += (errmsg + b"\n")
+        
+        name = get_username(conn, msg, 0)
 
-    if ret == True:
-        get_user_menu(conn, name, obj)
-    else:
-        # TODO add UI for login fail
-        print("fail to login")
+        msg += (b" * Username -> " + bytes(name.encode()) + b"\n")
+        pw = get_password(conn, msg, 0)
 
+        # SQL request and confirm
+        ret = obj.match_id_pw(name, pw)
+
+        if ret == True:
+           get_user_menu(conn, name, obj)
+           return
+       # if id or pw is not correct
+        else: 
+           errmsg = ERRMSG_LOGIN
 
 def get_user_menu(conn, user, obj):
     errmsg = ""
