@@ -124,14 +124,6 @@ class bankDB:
             if not result: return False # No such user
             return result['balance']
     
-    def is_valid_receiver(self, account_num):
-        with self.conn.cursor() as cursor:
-            sql = "SELECT * FROM `user_table` WHERE `account_num`=%s"
-            cursor.execute(sql, (account_num, ))
-            result = cursor.fetchone()
-            if not result: return False # No such user
-            return True
-
     def update_balance(self, account, change):
         '''
         positive change => ADD to banalce
