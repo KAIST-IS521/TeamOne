@@ -1,8 +1,7 @@
 import re
 from util import *
 
-def user_mypage(conn, user):
-    
+def user_mypage(conn, user, obj):
     # get password for confirmation
     errmsg = ""
     while True:
@@ -17,9 +16,11 @@ def user_mypage(conn, user):
         conn.sendall(b" * Password -> ")
         data = recv_line(conn)
         
-        # TODO: check password valid or not
+        # check password ivalid or not
         if data == '':
             errmsg = ERRMSG_PW_NULL
+        elif obj.match_id_pw(user, data) == False:
+            errmsg = ERRMSG_PW_WRONG
         else:
             break
 
@@ -41,24 +42,25 @@ def user_mypage(conn, user):
         data = recv_line(conn)
 
         if data == '1':
-            return user_edit_info(conn, user)
+            return user_edit_info(conn, user, obj)
             
         elif data == '2':
-            return user_remove_account(conn, user)
+            return user_remove_account(conn, user, obj)
 
         elif data == '3':
             return 0
         else:
             errmsg = ERRMSG_OPTION
 
-def user_edit_info(conn, user):
-    #TODO: get old user info (SQL)
-    
+def user_edit_info(conn, user, obj):
+    # get every user info from DB
+    info = obj.get_every_user_info(user)
+
     init_msg = (b" [ Edit User Info ]\n" + 
                 b" Hello, " + user.encode() + b".\n\n" +
                 b" 1. Password \n" +
-                b" 2. Email \n" +
-                b" 3. Phone number \n" +
+                b" 2. Email : " + info['email'].encode() + b"\n" +
+                b" 3. Phone number : " + info['mobile'].encode() + b"\n" +
                 b" 4. Previous menu\n\n")
     errmsg = ""
 
@@ -79,18 +81,18 @@ def user_edit_info(conn, user):
         if data == '1': # password edit
             init_msg += (b" What information would you like to edit? -> " +
                     data.encode() + b"\n\n")
-            return edit_info(conn, user, 1, init_msg)
+            return edit_info(conn, user, 1, init_msg, info, obj)
 
         elif data == '2': # email edit
             init_msg += (b" What information would you like to edit? -> " +
                     data.encode() + b"\n\n")
-            edit_info(conn, user, 2, init_msg)
+            edit_info(conn, user, 2, init_msg, info, obj)
             return 0
 
         elif data == '3': # phone number edit
             init_msg += (b" What information would you like to edit? -> " +
                     data.encode() + b"\n\n")
-            edit_info(conn, user, 3, init_msg)
+            edit_info(conn, user, 3, init_msg, info, obj)
             return 0
 
         elif data == '4': # go to previous menu
@@ -99,7 +101,7 @@ def user_edit_info(conn, user):
         else:
             errmsg = ERRMSG_OPTION
 
-def edit_info(conn, user, option, msg):
+def edit_info(conn, user, option, msg, info, obj):
     errmsg = ""
 
     while True:
@@ -112,6 +114,7 @@ def edit_info(conn, user, option, msg):
         if option == 1: # password edit
             new_pw = get_password(conn, msg, 1)
             msg += (b" * New Password -> " + new_pw.encode() + b"\n\n")
+            info['user_pw'] = new_pw
             break
 
         elif option == 2: # email edit
@@ -131,10 +134,11 @@ def edit_info(conn, user, option, msg):
             else:
                 new_mail = data
                 msg += (b" * New Email -> " + new_mail.encode() + b"\n\n")
+                info['email'] = new_mail
                 break
 
         elif option == 3: # phone number edit
-            conn.sendall(b" * New Phone Number (ex. 010-xxxx-xxxx) -> ")
+            conn.sendall(b" * New Phone Number (digit only) -> ")
 
             # get phone number from user
             data = recv_line(conn)
@@ -147,8 +151,9 @@ def edit_info(conn, user, option, msg):
                 errmsg = ERRMSG_PHONE_INVAL
             else:
                 new_phone = data
-                msg += (b" * New Phone Number (ex. 010-xxxx-xxxx) -> " +
+                msg += (b" * New Phone Number (digit only) -> " +
                         new_phone.encode() + b"\n\n")
+                info['mobile'] = new_phone
                 break
 
     errmsg = ""
@@ -168,13 +173,19 @@ def edit_info(conn, user, option, msg):
 
         # Y -> do register
         if data == 'Y':
-            # TODO: store entered information in DB 
-            conn.sendall(COR_SUCCESS +
-                    b"\n ** Modification successfully completed! **\n\n" + COR_BASE)
+            # store entered information in DB 
+            ret = obj.store_user_info_modification(user, info)
+
+            if ret == True:
+                conn.sendall(COR_SUCCESS +
+                        b"\n ** Modification successfully completed! **\n\n" 
+                        + COR_BASE)
             
-            conn.send(b" Enter any key to return to the previous menu -> ")
-            data = recv_line(conn)
-            return 1
+                conn.send(b" Enter any key to return to the previous menu -> ")
+                data = recv_line(conn)
+                return 1
+            else:
+                data = 'N'
 
         # N -> calcel the register
         elif data == 'N':
@@ -187,7 +198,7 @@ def edit_info(conn, user, option, msg):
         else:
             errmsg = ERRMSG_OPTION
 
-def user_remove_account(conn, user):
+def user_remove_account(conn, user, obj):
     errmsg = ""
 
     while True:
@@ -209,7 +220,7 @@ def user_remove_account(conn, user):
         conn.send(COR_BASE)
         # Y -> remove account
         if data == 'Y':
-            remove_success(conn, user)
+            remove_success(conn, user, obj)
             return 1
         
         # N -> cancel deletion
@@ -222,11 +233,16 @@ def user_remove_account(conn, user):
         else:
             errmsg = ERRMSG_OPTION
 
-def remove_success(conn, user):
-    # TODO: remove correspoding account from DB
+def remove_success(conn, user, obj):
+    # remove correspoding account from DB
+    ret = obj.remove_user_account(user)
     
-    conn.sendall(b"\n Your account is removed successfully.\n" +
-                 b" Thank you for using our bank so far.\n\n" +
-                 b" Enter any key to return to the main menu -> ")
+    if ret == True:
+        conn.sendall(b"\n Your account is removed successfully.\n" +
+                     b" Thank you for using our bank so far.\n\n" +
+                     b" Enter any key to return to the main menu -> ")
+    else:
+        conn.send(b"\n ** Removing Account Canceled ** \n" +
+                  b"\n Enter any key to return to the previous menu -> ")
     
     data = recv_line(conn)

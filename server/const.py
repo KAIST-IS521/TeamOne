@@ -1,7 +1,7 @@
 REGEX_USERNAME = '^[A-Za-z0-9]{,20}$' # TODO: should be changed based on MySQL
 #REGEX_PASSWORD = '' # TODO: should be changed based on MySQL
 REGEX_EMAIL = '(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)'
-REGEX_PHONE = '^\d{3}-\d{3,4}-\d{4}$'
+REGEX_PHONE = '^\d{11}$'
 REGEX_AMOUNT = '^[0-9]*$' 
 LEN_PASSWORD = 20 # TODO: should be changed based on MySQL
 LEN_EMAIL = 45
@@ -26,6 +26,7 @@ ERRMSG_USER_INVAL = COR_ERRMSG + b" Invalid username.\n" + COR_BASE
 ERRMSG_PW_LEN = (COR_ERRMSG + b" Password should be shorter than " + 
                     bytes(str(LEN_PASSWORD).encode()) + b".\n" + COR_BASE)
 ERRMSG_PW_NULL = COR_ERRMSG +  b" Please input the password.\n" + COR_BASE
+ERRMSG_PW_WRONG = COR_ERRMSG +  b" Incorrect password.\n" + COR_BASE
 
 ERRMSG_RECV_NULL = COR_ERRMSG + b" Please input the receiver.\n" + COR_BASE
 ERRMSG_RECV_INVAL = COR_ERRMSG + b" Invalid receiver.\n" + COR_BASE
