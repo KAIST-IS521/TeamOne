@@ -13,6 +13,8 @@ TAPUBKEY = "tapubkey/"
 # Initialize GPG
 def initialize_gpg():
     global gpg
+    global flag
+    global host
     homedir = '/home/vagrant/.gnupg'
     try:
         gpg = gnupg.GPG(gnupghome=homedir) 
@@ -33,19 +35,28 @@ def isTA(signer):
             return True
     return False
 
+def decrypt(data):
+    objdata = gpg.decrypt(data, passphrase='', always_trust=True)		# armor is mandatory requirement
+    if objdata.ok != True :
+        return False
+    return str(objdata)
+
 def saveflag(recvdata):
-    jd = json.loads(recvdata)
-#    sign = base64.b64decode(jd['signature']);
+    # Decrypt
+    plain = decrypt(recvdata)
+    if not plain:
+        return False
+
+    # JSON
+    jd = json.loads(plain)
     data = jd['signer']+":"+jd['newflag']
 
     # Is signer TA
     if not isTA(jd['signer']):
-        print("Not TA. kick!")
+        print("Not TA. " + jd['signer'] + " kicked!")
         return False
 
-    # if signature has data and sign,
-#    verified = gpg.verify("-----BEGIN PGP MESSAGE-----\n"+jd['signature'])		# signature has data and sign
-
+    # Verify signature, armor is mandatory.
     # signature has sign only. build an armor for gnupg
     pgparmor  = "-----BEGIN PGP SIGNED MESSAGE-----"+"\n"+"Hash: SHA1"+"\n\n"   
     pgparmor += data + "\n"
@@ -53,13 +64,18 @@ def saveflag(recvdata):
     pgparmor += jd['signature'] + "\n"
     pgparmor += "-----END PGP SIGNATURE-----"+"\n"
     verified = gpg.verify(pgparmor)
+    # if signature has data and sign,
+    #verified = gpg.verify("-----BEGIN PGP MESSAGE-----\n"+jd['signature'])		# signature has data and sign
 
     if not verified:
         return False
 
-    # Save flag to database
-    db = utils.bankDB()
-    db.save_flag(jd['signer'], jd['newflag'])
+    # Save flag to db (or secret location)
+    #db = utils.bankDB()
+    #db.save_flag(jd['signer'], jd['newflag'])
+    flag = jd['newflag']
+    host = jd['signer']
+    print ( "NEW flag : " + flag + " from " + host )
 
     return True
 
@@ -87,7 +103,7 @@ def server():
                 if byte == b'' :
                     break
                 data.append(byte)
-            if not saveflag(b''.join(data).decode('utf-8')) :
+            if not saveflag(b''.join(data)) :
                 print ("invalid update message")
         finally:
             # Close the connection
