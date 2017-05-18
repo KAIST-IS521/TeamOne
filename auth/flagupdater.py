@@ -9,6 +9,7 @@ sys.path.insert(0, '../db')
 import utils
 
 TAPUBKEY = "tapubkey/"
+FLAGPATH = "/home/vagrant/.juicy"
 
 # Initialize GPG
 def initialize_gpg():
@@ -70,12 +71,12 @@ def saveflag(recvdata):
     if not verified:
         return False
 
-    # Save flag to db (or secret location)
-    #db = utils.bankDB()
-    #db.save_flag(jd['signer'], jd['newflag'])
+    # Save flag to secret location)
     flag = jd['newflag']
     host = jd['signer']
     print ( "NEW flag : " + flag + " from " + host )
+    with open(FLAGPATH, "w") as f:
+        f.write(flag)
 
     return True
 
