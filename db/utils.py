@@ -124,27 +124,29 @@ class bankDB:
             if not result: return False # No such user
             return True
 
-    def update_balance(self, account_num, change):
+    def update_balance(self, account, change):
         '''
         positive change => ADD to banalce
         negative change => SUBTRACT from balance
         '''
         with self.conn.cursor() as cursor:
             sql = "UPDATE `user_table` SET `balance`=`balance` + %s " \
-                  "WHERE `account_num`=%s"
+                  "WHERE `user_id`=%s"
             try:
-                cursor.execute(sql, (change, account_num))
+                cursor.execute(sql, (change, account))
             except:
                 return False
             return True
 
-    def store_transaction(self, user_id, receiver, amount, msg):
+    def store_transaction(self, user_id, receiver_id, amount, msg):
         with self.conn.cursor() as cursor:
-            sender = self.get_account_num(user_id)
-            if not self.update_balance(sender, -amount):
+            if not self.update_balance(user_id, -amount):
                 # unable to send due to lack of balance
                 return False
-            self.update_balance(receiver, amount)
+            self.update_balance(receiver_id, amount)
+            
+            sender = self.get_account_num(user_id)
+            receiver = self.get_account_num(receiver_id)
 
             sql = "INSERT INTO `tran_table` " \
                   "(`from_account`, `to_account`, `remit`, `msg`) " \
