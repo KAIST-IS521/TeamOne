@@ -147,12 +147,16 @@ class bankDB:
             
             sender = self.get_account_num(user_id)
             receiver = self.get_account_num(receiver_id)
+            from_bal = self.get_balance(user_id)
+            to_bal = self.get_balance(receiver_id)
 
             sql = "INSERT INTO `tran_table` " \
-                  "(`from_account`, `to_account`, `remit`, `msg`) " \
-                  "VALUES(%s, %s, %s, %s)"
+                  "(`from_account`, `to_account`, `remit`, `msg`, " \
+                  " `from_balance`, `to_balance`) " \
+                  "VALUES(%s, %s, %s, %s, %s, %s)"
             try:
-                cursor.execute(sql, (sender, receiver, amount, msg))
+                cursor.execute(sql,
+                        (sender, receiver, amount, msg, from_bal, to_bal))
                 return True
             except:
                 return False
