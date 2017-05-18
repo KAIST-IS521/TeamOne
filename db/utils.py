@@ -163,7 +163,7 @@ class bankDB:
             if not account_num:
                 return False
             sql = "SELECT tr_time, from_account, to_account, \
-                   remit, msg FROM tran_table \
+                   remit, msg, from_balance, to_balance FROM tran_table \
                    WHERE from_account = %s OR to_account = %s \
                    ORDER BY tr_time"
             cursor.execute(sql, (account_num, account_num))
