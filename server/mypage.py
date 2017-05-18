@@ -171,7 +171,7 @@ def edit_info(conn, user, option, msg, info, obj):
         data = recv_line(conn)
         data = data.upper()
 
-        # Y -> do register
+        # Y -> do modify
         if data == 'Y':
             # store entered information in DB 
             ret = obj.store_user_info_modification(user, info)
@@ -185,9 +185,14 @@ def edit_info(conn, user, option, msg, info, obj):
                 data = recv_line(conn)
                 return 1
             else:
-                data = 'N'
+                # DB error : cancel modification
+                conn.sendall(COR_ERRMSG +
+                        b"\n ** Modification Canceled **\n\n" + COR_BASE)
+                conn.send(b" Enter any key to return to the previous menu -> ")
+                data = recv_line(conn)
+                return 0
 
-        # N -> calcel the register
+        # N -> calcel the modification
         elif data == 'N':
             conn.sendall(COR_ERRMSG +
                     b"\n ** Modification Canceled **\n\n" + COR_BASE)
