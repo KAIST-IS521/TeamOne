@@ -47,8 +47,11 @@ def generate_challenge(github_id, rand):
     encrypted_data = gpg.encrypt(hex(rand), pubkey.fingerprints[0])
     encrypted_string = str(encrypted_data)
 
+    # Import a server's public key for sending
+    my_key_data = open('/home/vagrant/TeamOne/server.pub').read()
+
     # Form the return string
-    challenge = encrypted_string + key_data
+    challenge = encrypted_string + my_key_data
     encoded_challenge = base64.b64encode(challenge.encode())
 
     return encoded_challenge
@@ -59,7 +62,6 @@ def verify_response(github_id, encrypted_string):
 
     if(decrypted_data.ok != True):
         return  
-    print (decrypted_data) 
      
     return str(decrypted_data)   
 
