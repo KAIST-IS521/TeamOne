@@ -2,21 +2,23 @@ from util import *
 from datetime import datetime
 import re
 
-def print_transfer(conn, user, receiver, amount, date, balance):
+def print_transfer(conn, user, receiver, amount, date, msg, balance):
     conn.sendall(COR_RESULT +
                  b" # Sender: " + user.encode() + b"\n" +
                  b" # Receiver: " + receiver.encode() + b"\n" +
                  b" # Transfer Amount: " + amount.encode() + b" Won\n" +
-                 b" # Transfer Date: " + date.encode() + b"\n")
+                 b" # Transfer Date: " + date.encode() + b"\n" +
+                 b" # Transfer message: " + msg.encode() + b"\n")
     if balance:
-        conn.sendall(b" # Balance after transfer: " + str(balance) + b"\n\n" + 
-                COR_BASE)
+        conn.sendall(b" # Balance after transfer: " + str(balance).encode() + 
+                b"\n\n" + COR_BASE)
     else:
         conn.sendall(b"\n" + COR_BASE)
 
-def user_transfer(conn, user):
-    receiver = get_receiver(conn, user)
-    amount = get_amount(conn, user, receiver)
+def user_transfer(conn, user, obj):
+    receiver = get_receiver(conn, user, obj)
+    amount = get_amount(conn, user, receiver, obj)
+    message = get_message(conn, user, receiver, amount)
 
     # get current transfer time
     date = datetime.now().strftime('%Y-%m-%d')
@@ -32,9 +34,11 @@ def user_transfer(conn, user):
                      b" Please enter required information for transfer.\n\n" +
                      b" * Receiver -> " + receiver.encode() + b"\n" +
                      b" * Amount to transfer -> " + amount.encode() + b"\n" +
+                     b" * Transfer message -> " + message.encode() + b"\n" +
                      b"\n Please confirm the following transfer details.\n\n")
         
-        print_transfer(conn, user, receiver, amount, date, None)
+        balance = obj.get_balance(user)
+        print_transfer(conn, user, receiver, amount, date, message, None)
 
         if errmsg:
             conn.send(errmsg)
@@ -47,24 +51,24 @@ def user_transfer(conn, user):
 
         # Y -> do transfer
         if data == 'Y':
-            transfer_success(conn, user, receiver, amount)
+            ret = obj.store_transaction(user, receiver, int(amount), message)
+            
+            if ret is True:
+                transfer_success(conn, user, receiver, amount, message, obj)
+            else:
+                transfer_cancel(conn, user, obj)
             return
         
         # N -> cancel the transfer
         elif data == 'N':
-            transfer_cancel(conn, user)
+            transfer_cancel(conn, user, obj)
             return
 
         else:
             errmsg = ERRMSG_OPTION
 
-def transfer_success(conn, user, receiver, amount):
-    # TODO: confirm valid receiver
-    # TODO: confirm  amount < balance
-    # TODO: if valid, do transfer 
-    # TODO: add UI for fail to transfer
-
-    balance = 0 # TODO: get balance from DB
+def transfer_success(conn, user, receiver, amount, msg, obj):
+    balance = obj.get_balance(user) # get balance from DB
     date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     
     print_logo(conn)
@@ -72,7 +76,7 @@ def transfer_success(conn, user, receiver, amount):
                  b" Hello, " + user.encode() + b".\n\n")
 
     # print transfer details
-    print_transfer(conn, user, receiver, amount, date, balance)
+    print_transfer(conn, user, receiver, amount, date, msg, balance)
     conn.sendall(COR_SUCCESS + 
                  b"\n ** Transfer complete successfully! **\n\n" + COR_BASE)
         
@@ -81,8 +85,8 @@ def transfer_success(conn, user, receiver, amount):
     # get input from user to return to previous menu
     data = recv_line(conn)
 
-def transfer_cancel(conn, user):
-    balance = 0 # TODO: get balance from DB
+def transfer_cancel(conn, user, obj):
+    balance = obj.get_balance(user) # get balance from DB
 
     print_logo(conn)
     conn.sendall(b" [ Transfer ] \n" + 
@@ -95,7 +99,7 @@ def transfer_cancel(conn, user):
     # get input from user to return to previous menu
     data = recv_line(conn)
         
-def get_receiver(conn, user):
+def get_receiver(conn, user, obj):
     errmsg = ""
 
     while True:
@@ -115,12 +119,14 @@ def get_receiver(conn, user):
 
         if data == '':
             errmsg = ERRMSG_RECV_NULL
-        elif regex.match(data) is None:
+        elif (regex.match(data) is None or
+                obj.is_existing_id(data) is False or
+                user == data): # if sender == receiver
             errmsg = ERRMSG_RECV_INVAL
         else:
             return data
 
-def get_amount(conn, user, target):
+def get_amount(conn, user, target, obj):
     errmsg = ""
 
     while True:
@@ -145,5 +151,33 @@ def get_amount(conn, user, target):
             errmsg = ERRMSG_WON_NULL
         elif regex.match(data) is None:
             errmsg = ERRMSG_WON_INVAL
+        elif int(data) > obj.get_balance(user):
+            errmsg = ERRMSG_WON_LIMIT
+        else:
+            return data
+
+def get_message(conn, user, target, amount):
+    errmsg = ""
+
+    while True:
+        print_logo(conn)
+        conn.sendall(b" [ Transfer ]\n" + 
+                     b" Hello, " + user.encode() + b".\n\n" +
+                     b" Please enter required information for transfer.\n\n" +
+                     b" * Receiver -> " + target.encode() + b"\n"
+                     b" * Amount to transfer -> " + amount.encode() + b"\n")
+        
+        if errmsg:
+            conn.send(errmsg)
+
+        conn.sendall(b" * Transfer message -> ")
+
+        # get amount from user
+        data = recv_line(conn)
+        
+        if data == '':
+            errmsg = ERRMSG_MSG_NULL
+        elif len(data) > LEN_MSG:
+            errmsg = ERRMSG_MSG_LEN
         else:
             return data

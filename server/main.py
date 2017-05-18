@@ -1,5 +1,4 @@
 import socket, sys, re, base64
-sys.path.append('/home/vagrant/TeamOne/auth')
 from threading import Thread
 from const import *
 from util import *
@@ -7,10 +6,11 @@ from balance import *
 from history import *
 from transfer import *
 from mypage import *
-from auth import *
 
 sys.path.insert(0, '../db')
+sys.path.insert(0, '../auth')
 import utils
+from auth import *
 
 # PGP-authentication for registration
 def pgp_auth(conn, obj):
