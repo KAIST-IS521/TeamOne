@@ -22,6 +22,7 @@ ERRMSG_LOGIN = COR_ERRMSG+ b" ** Login fail **\n" + COR_BASE
 
 ERRMSG_USER_NULL = COR_ERRMSG + b" Please input the username.\n" + COR_BASE
 ERRMSG_USER_INVAL = COR_ERRMSG + b" Invalid username.\n" + COR_BASE
+ERRMSG_USER_USED = COR_ERRMSG + b" Entered username is already in use.\n" + COR_BASE
 
 ERRMSG_PW_LEN = (COR_ERRMSG + b" Password should be shorter than " + 
                     bytes(str(LEN_PASSWORD).encode()) + b".\n" + COR_BASE)
