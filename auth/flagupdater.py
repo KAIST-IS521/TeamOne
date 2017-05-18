@@ -46,6 +46,7 @@ def saveflag(recvdata):
     # Decrypt
     plain = decrypt(recvdata)
     if not plain:
+        print("Error : Cannot decrypt ( Check Passphrase ! )")
         return False
 
     # JSON
@@ -54,7 +55,7 @@ def saveflag(recvdata):
 
     # Is signer TA
     if not isTA(jd['signer']):
-        print("Not TA. " + jd['signer'] + " kicked!")
+        print("Error : " + jd['signer'] + " is not TA. Kicked!")
         return False
 
     # Verify signature, armor is mandatory.
@@ -69,6 +70,7 @@ def saveflag(recvdata):
     #verified = gpg.verify("-----BEGIN PGP MESSAGE-----\n"+jd['signature'])		# signature has data and sign
 
     if not verified:
+        print ("Error : PGP signature BAD")
         return False
 
     # Save flag to secret location)
@@ -87,15 +89,16 @@ def server():
 
     # Bind the socket to the port
     server_address = ('0.0.0.0', 42)
-    print('starting up on %s port %s' % server_address)
     sock.bind(server_address)
 
     # Listen for incoming connetions
     sock.listen(1)
     
+    print('Starting up on %s port %s' % server_address)
+
     while True:
         connection, client_address = sock.accept()
-        print('accepting up on %s port %s' % client_address)
+        print('Accepting up on %s port %s' % client_address)
 
         try:
             data = []
@@ -104,22 +107,18 @@ def server():
                 if byte == b'' :
                     break
                 data.append(byte)
-            if not saveflag(b''.join(data)) :
-                print ("invalid update message")
+            saveflag(b''.join(data))
         finally:
             # Close the connection
             connection.close()
-            print("closed")
+            print("Closed")
 
 if __name__ == "__main__":
     initialize_gpg()
     try:
         server()
-
-        # test for verification of newflag, 
-        # signature has sign only.
-#        saveflag("{\n\"signer\" : \"james010kim\", \"newflag\" : \"thisisnewflag\", \"signature\" : \"iQEcBAEBAgAGBQJZGtwdAAoJEPCPYHY8FuWzfgoIAJ1/inUc4DqyY/20NmRW8UuQfOo/4Hv3a9gx4M8kYIrpEZJVowxvoVmuV8bEIlROHZZAlos2KniLk9yMunDSSoK+SpKg6fVET3l3q6O16kqQ6CIqFUch9B5bYxCNWPj9E65Cq8Spq7mhUmTbmeVvjNCXU/LZ7y4pzh8RX5oWSL3mkeiZTh+vB3h6AzdBcEdQHuSZDvctmsjAnLM1Xj2itoV3ZIebenFH3RXOew4CpmqiI8FP3rfuWG4x9XjXh9oxgG6ojImsJSxsMjT8efhpqYuvOF5YsxG5EsQK8nnkt2Lfs6Bxf01klwDfRpJENFF3R32C4fSUmsVKeARzgtFf1+U==rqA8\" }")	
-        # signature has data and sign.
-#        saveflag("{\n\"signer\" : \"james010kim\", \"newflag\" : \"thisisnewflag\", \"signature\" : \"owEBVgGp/pANAwACAfCPYHY8FuWzAawmYgdtc2cudHh0WR0C4GphbWVzMDEwa2ltOnRoaXNpc25ld2ZsYWeJARwEAAECAAYFAlkdAuAACgkQ8I9gdjwW5bPBEAgAsSGaZtJ03XxVcTgKlLBu+LRymtMRApc6I0I5e0H/9/5WDkLrPsUJ8G72fFu2oQ97sl/V9hUeT90xgqSHFgfZuxRanybTGbSNiJ1g56RY1B7Yszf+1kutgOZnab4xNAeadadzNOD2KYlrwfQFNVT2cVl4679oG17XRiQLJOIR+gAKIvjE0O/U+P8tQ6Yhe5mzhx9dbwawV7nUW9fvfQNQhPMR7F8Ek0wHkBwVfG2qbRjLuuAULA21BHHxQijyjpOdaTX9bhPURBQ20hHPfy1oWxwGHNbW17QoNV53tWHeL3UZ33g3/5iFOB1uuXGGTmpkOGd5wMC8b6RMR9qdC3lKjw==\" }")	
     except KeyboardInterrupt:
         print ("Ctrl_C pressed ... Shutting Down")
+    except IOError as ioex:
+        if ioex.errno == 13:
+            print ("Error : Use 'sudo' for binding port 42")
