@@ -12,6 +12,9 @@ sys.path.insert(0, '../auth')
 import utils
 from auth import *
 
+# global variable
+input_passphrase = ""
+
 # PGP-authentication for registration
 def pgp_auth(conn, obj):
     init_msg = (b" [ PGP Authentication ]\n" +
@@ -47,11 +50,11 @@ def pgp_auth(conn, obj):
      
             # Decrypt the encrypted random
             decoded_response = base64.b64decode(response)
-            decrypted_rand = verify_response(github_id, decoded_response)        
+            decrypted_rand = verify_response(github_id, decoded_response, input_passphrase)        
 
             # Check if the sent and received random is identical
             if(hex(rand) == decrypted_rand):
-                register(conn, obj)
+                register(conn, github_id, obj)
                 break
             else:
                 init_msg += (b"PGP authentication failed!\n\n")
@@ -61,7 +64,7 @@ def pgp_auth(conn, obj):
             init_msg += (b"GitHub ID is NOT registered!\n\n")
             continue
 
-def register(conn, obj):
+def register(conn, github_id, obj):
     init_msg = (b" [ Register ]\n" +
                 b" Please input the following information.\n\n")
     errmsg = ""
@@ -77,7 +80,7 @@ def register(conn, obj):
         
         if cnt == 0:
             # get user name
-            name = get_username(conn, init_msg, 1)
+            name = get_username(conn, init_msg, obj, 1)
             init_msg += (b" * Username -> " + name.encode() + b"\n")
             cnt += 1 # username OK
             continue
@@ -110,7 +113,7 @@ def register(conn, obj):
 
         if cnt == 3:
             # get phone number
-            conn.sendall(b" * Phone number (ex. 01x-xxxx-xxxx) -> ")
+            conn.sendall(b" * Phone number (digit only) -> ")
             data = recv_line(conn)
 
             regex = re.compile(REGEX_PHONE)
@@ -121,7 +124,7 @@ def register(conn, obj):
                 errmsg = ERRMSG_PHONE_INVAL
             else:
                 phone = data
-                init_msg += (b" * Phone number (ex. 01x-xxxx-xxxx) -> " +
+                init_msg += (b" * Phone number (digit only) -> " +
                         phone.encode() + b"\n")
                 break # all processes are done
     
@@ -137,6 +140,7 @@ def register(conn, obj):
                      COR_RESULT +
                      b" # Username: " + name.encode() + b"\n" +
                      b" # Password: " + pw.encode() + b"\n" +
+                     b" # Github ID: " + github_id.encode() + b"\n" +
                      b" # Email: " + email.encode() + b"\n" +
                      b" # Phone number: " + phone.encode() + b"\n" +
                      b" # Balance: " + str(balance).encode() + b" Won\n\n" +
@@ -153,13 +157,21 @@ def register(conn, obj):
 
         # Y -> do register
         if data == 'Y':
-            # TODO: store entered information in DB 
-            conn.sendall(COR_SUCCESS +
-                    b"\n ** Register complete successfully! **\n\n" + COR_BASE)
-            
-            conn.send(b" Enter any key to return to the previous menu -> ")
-            data = recv_line(conn)
-            return
+            # store entered information in DB 
+            ret = obj.store_user(name, pw, github_id, email, phone, balance)
+
+            if ret == False:
+                conn.sendall(COR_ERRMSG +
+                        b"\n ** Register Canceled **\n\n" + COR_BASE)
+                conn.send(b" Enter any key to return to the previous menu -> ")
+                data = recv_line(conn)
+                return
+            else:
+                conn.sendall(COR_SUCCESS +
+                        b"\n ** Register complete successfully! **\n\n" + COR_BASE)
+                conn.send(b" Enter any key to return to the previous menu -> ")
+                data = recv_line(conn)
+                return
 
         # N -> calcel the register
         elif data == 'N':
@@ -213,11 +225,10 @@ def get_github_id(conn, msg, flag):
             errmsg = ERRMSG_USER_NULL
         elif regex.match(data) == None:
             errmsg = ERRMSG_USER_INVAL
-        # TODO: if flag==1 -> is existing user(data)
         else:
             return data
 
-def get_username(conn, msg, flag):
+def get_username(conn, msg, obj, flag):
     errmsg = ""
 
     while True:
@@ -239,7 +250,9 @@ def get_username(conn, msg, flag):
             errmsg = ERRMSG_USER_NULL
         elif regex.match(data) == None:
             errmsg = ERRMSG_USER_INVAL
-        # TODO: if flag==1 -> is existing user(data)
+        # if user entered already used ID in register
+        elif flag == 1 and obj.is_existing_id(data) == True:
+            errmsg = ERRMSG_USER_USED
         else:
             return data
 
@@ -254,7 +267,7 @@ def login(conn, obj):
         if errmsg:
             msg += (errmsg + b"\n")
         
-        name = get_username(conn, msg, 0)
+        name = get_username(conn, msg, obj, 0)
 
         msg += (b" * Username -> " + bytes(name.encode()) + b"\n")
         pw = get_password(conn, msg, 0)
@@ -389,6 +402,8 @@ def server():
 
 if __name__ == "__main__":
     try:
+        # Get a passphrase from commandline argument
+        input_passphrase = str(sys.argv[1])
         server()
     except KeyboardInterrupt:
         print ("Ctrl_C pressed ... Shutting Down")

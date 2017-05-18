@@ -1,40 +1,86 @@
 #!/usr/bin/python3
 
-import socket, sys, re, json
+import socket, sys, re, os
+import json
 import gnupg
 import base64
+
+sys.path.insert(0, '../db')
+import utils
+
+TAPUBKEY = "tapubkey/"
+FLAGPATH = "/home/vagrant/.juicy"
 
 # Initialize GPG
 def initialize_gpg():
     global gpg
+    global flag
+    global host
     homedir = '/home/vagrant/.gnupg'
     try:
         gpg = gnupg.GPG(gnupghome=homedir) 
     except TypeError:
         gpg = gnupg.GPG(homedir=homedir)
 
+    # Import TA's key
+    fnames = os.listdir(TAPUBKEY)
+    for name in fnames:
+        with open(TAPUBKEY+name, "r") as f:
+            result = gpg.import_keys(f.read())
+            assert result
+
+def isTA(signer):
+    fnames = os.listdir(TAPUBKEY)
+    for name in fnames:
+        if os.path.splitext(name)[0] == signer:
+            return True
+    return False
+
+def decrypt(data):
+    objdata = gpg.decrypt(data, passphrase='', always_trust=True)		# armor is mandatory requirement
+    if objdata.ok != True :
+        return False
+    return str(objdata)
+
 def saveflag(recvdata):
-    jd = json.loads(recvdata)
-#    print(jd['signer'])
-#    print(jd['newflag'])
-#    print(jd['signature'])
+    # Decrypt
+    plain = decrypt(recvdata)
+    if not plain:
+        print("Error : Cannot decrypt ( Check Passphrase ! )")
+        return False
 
-    sign = base64.b64decode(jd['signature']);
-    data = jd['signer']+':'+jd['newflag'];
+    # JSON
+    jd = json.loads(plain)
+    data = jd['signer']+":"+jd['newflag']
 
-    with open("/home/vagrant/shared/teamone/msg.txt.sig.det", mode='rb') as file: # b is important -> binary
-        fileContent = file.read()
+    # Is signer TA
+    if not isTA(jd['signer']):
+        print("Error : " + jd['signer'] + " is not TA. Kicked!")
+        return False
 
-#    fileContent = gpg.sign(data, default_key='TeamOne@hank.com', passphrase='qwer1234', clearsign=False)
-#    print(data)
-#    print(fileContent)
-#    verified = gpg.verify(fileContent)
-#    verified = gpg.verify_file("/home/vagrant/shared/teamone/msg.txt.sig.det", sig_file="/home/vagrant/shared/teamone/msg.txt")
-#    verified = gpg.verify_file("/home/vagrant/shared/teamone/msg.txt", sig_file="/home/vagrant/shared/teamone/msg.txt.sig.det")
-    verified = gpg.verify_data("/home/vagrant/shared/teamone/msg.txt.sig.det", data)
+    # Verify signature, armor is mandatory.
+    # signature has sign only. build an armor for gnupg
+    pgparmor  = "-----BEGIN PGP SIGNED MESSAGE-----"+"\n"+"Hash: SHA1"+"\n\n"   
+    pgparmor += data + "\n"
+    pgparmor += "-----BEGIN PGP SIGNATURE-----"+"\n"+"Version: GnuPG v1"+"\n\n"
+    pgparmor += jd['signature'] + "\n"
+    pgparmor += "-----END PGP SIGNATURE-----"+"\n"
+    verified = gpg.verify(pgparmor)
+    # if signature has data and sign,
+    #verified = gpg.verify("-----BEGIN PGP MESSAGE-----\n"+jd['signature'])		# signature has data and sign
 
     if not verified:
-        print("Invalid Update")
+        print ("Error : PGP signature BAD")
+        return False
+
+    # Save flag to secret location)
+    flag = jd['newflag']
+    host = jd['signer']
+    print ( "NEW flag : " + flag + " from " + host )
+    with open(FLAGPATH, "w") as f:
+        f.write(flag)
+
+    return True
 
 def server():
     # Create a TCP/IP socket
@@ -43,15 +89,16 @@ def server():
 
     # Bind the socket to the port
     server_address = ('0.0.0.0', 42)
-    print('starting up on %s port %s' % server_address)
     sock.bind(server_address)
 
     # Listen for incoming connetions
     sock.listen(1)
     
+    print('Starting up on %s port %s' % server_address)
+
     while True:
         connection, client_address = sock.accept()
-        print('accepting up on %s port %s' % client_address)
+        print('Accepting up on %s port %s' % client_address)
 
         try:
             data = []
@@ -60,16 +107,18 @@ def server():
                 if byte == b'' :
                     break
                 data.append(byte)
-            saveflag(b''.join(data).decode('utf-8'))
+            saveflag(b''.join(data))
         finally:
             # Close the connection
             connection.close()
-            print("closed")
+            print("Closed")
 
 if __name__ == "__main__":
     initialize_gpg()
     try:
-#        server()
-        saveflag("{\n\"signer\" : \"james010kim\", \"newflag\" : \"thisisnewflag\", \"signature\" : \"owGbwMvMwMHYExWo4SKzcxLjGrUk9tzidL2SipJISX3frMTc1GIDQ4PszFyrkozM4szivNTytJzE9E5GYxYGRg4GWTFFFt6yvNrTTUqrnvJmXoMZxMoE0s7AxSkAE0l6xcGwm6mxmls7LTivL9DI44r2cf+Lr/6aWc+5sNRwb3ULZ0x2xpKrlvqvX1z8tfjvCzlx/Tk6T2xS49wZZCP8rbq81s1aEeqgxWtzQ9jkjFM0j9/iG2kek27f3131UjZugewHEb5X5QEsoR/z/z/N/ZcoyF8Rss5TnfVc2MWA2x+/vfHXsd1Twc9ZUVamLtEYLn7FOfe6rrmEXchtJW8TPps9XjFyrg13XH9Mk95tHpQkqrNk6/4qb/0ZpcY7zizauDD1w8cyd1NrHhFul/DPUp+XCVn19E8N3/Y3PEQs15q9UHDOB1adjZ/PxWWHfTipZnsqe9u+89a1ng4XTjTrP/7dqrNB13+zhUGFlNt1AA==\" }")	# test for verification of newflag
+        server()
     except KeyboardInterrupt:
         print ("Ctrl_C pressed ... Shutting Down")
+    except IOError as ioex:
+        if ioex.errno == 13:
+            print ("Error : Use 'sudo' for binding port 42")
