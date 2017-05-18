@@ -18,7 +18,7 @@ def initialize_gpg():
 
 # Check if the registered githubId
 def check_registered(github_id):
-    with open("/home/vagrant/TeamOne/db/github_id.list") as file:
+    with open("../db/github_id.list") as file:
          for id in file:
              id = id.strip()
              id_list.append(id)
@@ -39,7 +39,7 @@ def generate_challenge(github_id, rand):
     if __name__ == "__main__": # FIXME - TEST
         key_data = open('./server.pub').read()
     else:
-        key_data = open('/home/vagrant/TeamOne/db/pubkeys/%s.pub' % github_id).read()
+        key_data = open('../db/pubkeys/%s.pub' % github_id).read()
 
     pubkey = gpg.import_keys(key_data)
 
@@ -48,7 +48,7 @@ def generate_challenge(github_id, rand):
     encrypted_string = str(encrypted_data)
 
     # Import a server's public key for sending
-    my_key_data = open('/home/vagrant/TeamOne/server.pub').read()
+    my_key_data = open('../server.pub').read()
 
     # Form the return string
     challenge = encrypted_string + my_key_data
