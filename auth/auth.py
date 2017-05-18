@@ -57,8 +57,8 @@ def generate_challenge(github_id, rand):
     return encoded_challenge
 
 # Verify the response from the user
-def verify_response(github_id, encrypted_string):
-    decrypted_data = gpg.decrypt(encrypted_string, passphrase='qwer1234') # FIXME
+def verify_response(github_id, encrypted_string, input_passphrase):
+    decrypted_data = gpg.decrypt(encrypted_string, passphrase=input_passphrase)
 
     if(decrypted_data.ok != True):
         return  
@@ -72,28 +72,3 @@ def split_challenge(decoded_challenge):
     challenge[1] = b'-----BEGIN PGP PUBLIC KEY BLOCK-----' + challenge[1]
 
     return challenge
-
-# Main for testing
-if __name__ == "__main__":
-    # Get an input from the command line
-    input_id = str(sys.argv[1]) 
-
-    # Initialize GPG & generate a server key 
-    initialize_gpg()
-
-    if(check_registered(input_id)):
-       if(check_already_registered(input_id)):
-           rand = generate_random(input_id)
-           encoded_challenge = generate_challenge(input_id, rand)
-           decoded_challenge = base64.b64decode(encoded_challenge)
-      
-           # split decoded challenge into encrypted and pubkey
-           challenge = split_challenge(decoded_challenge)
-           print (challenge[0])
-
-           # decrypt the encrpted part
-           verify_response(input_id, challenge[0])
-       else:
-           print ("%s is already registered!" % input_id)
-    else:
-       print ("%s is not registered!" % input_id)

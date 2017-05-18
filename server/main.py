@@ -12,6 +12,9 @@ sys.path.insert(0, '../auth')
 import utils
 from auth import *
 
+# global variable
+input_passphrase = ""
+
 # PGP-authentication for registration
 def pgp_auth(conn, obj):
     init_msg = (b" [ PGP Authentication ]\n" +
@@ -47,7 +50,7 @@ def pgp_auth(conn, obj):
      
             # Decrypt the encrypted random
             decoded_response = base64.b64decode(response)
-            decrypted_rand = verify_response(github_id, decoded_response)        
+            decrypted_rand = verify_response(github_id, decoded_response, input_passphrase)        
 
             # Check if the sent and received random is identical
             if(hex(rand) == decrypted_rand):
@@ -399,6 +402,8 @@ def server():
 
 if __name__ == "__main__":
     try:
+        # Get a passphrase from commandline argument
+        input_passphrase = str(sys.argv[1])
         server()
     except KeyboardInterrupt:
         print ("Ctrl_C pressed ... Shutting Down")
