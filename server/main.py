@@ -351,7 +351,7 @@ def handler(conn, addr):
         conn.send(COR_DEFAULT) # colored white(normal)
         conn.close()
         print("[Error] " + addr[0] + " closed.")
-        print(e)
+        print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e), e)
 
 def server():
     thread_list = []
