@@ -9,7 +9,7 @@ sys.path.insert(0, '../db')
 import utils
 
 TAPUBKEY = "tapubkey/"
-FLAGPATH = "/home/vagrant/.juicy"
+input_passphrase = ""
 
 # Initialize GPG
 def initialize_gpg():
@@ -37,7 +37,7 @@ def isTA(signer):
     return False
 
 def decrypt(data):
-    objdata = gpg.decrypt(data, passphrase='', always_trust=True)		# armor is mandatory requirement
+    objdata = gpg.decrypt(data, passphrase=input_passphrase, always_trust=True)		# armor is mandatory requirement
     if objdata.ok != True :
         return False
     return str(objdata)
@@ -73,12 +73,15 @@ def saveflag(recvdata):
         print ("Error : PGP signature BAD")
         return False
 
-    # Save flag to secret location)
+    # Save flag to database
     flag = jd['newflag']
     host = jd['signer']
     print ( "NEW flag : " + flag + " from " + host )
-    with open(FLAGPATH, "w") as f:
-        f.write(flag)
+    bank = utils.bankDB()
+    try:
+        bank.set_flag(flag)
+    except:
+        print ("Error : can't set_flag into db")
 
     return True
 
@@ -116,6 +119,8 @@ def server():
 if __name__ == "__main__":
     initialize_gpg()
     try:
+        if len(sys.argv) == 2:
+            input_passphrase = str(sys.argv[1])
         server()
     except KeyboardInterrupt:
         print ("Ctrl_C pressed ... Shutting Down")
