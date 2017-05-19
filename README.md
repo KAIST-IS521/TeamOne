@@ -46,3 +46,10 @@ As an opening event, the customers will earn 1,000 won after the initial registr
 ```
 > nc ip_addr 1588
 ``` 
+
+## How to launch the flag updater
+```
+~/TeamOne$ cd auth
+~/TeamOne/auth$  sudo python3 flagupdater.py passphrase
+```
+
