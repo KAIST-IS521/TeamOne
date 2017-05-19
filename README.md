@@ -25,16 +25,21 @@ As an opening event, the customers will earn 1,000 won after the initial registr
 4. **Edit user info**: Edit the detail user information or remove the user account
 
 ## How to Use
+### Download the source code
+```
+~$ git clone https://github.com/KAIST-IS521/TeamOne.git
+```
 
 ### Build the system
 ```
+~$ cd TeamOne
 ~/TeamOne$ make
 ```
 
 ## How to launch the banking server
 ```
 ~/TeamOne$ cd server
-~/TEamOne/server$  python3 main.py passphrase
+~/TeamOne/server$  python3 main.py passphrase
 ```
 
 ## How to access the banking system
