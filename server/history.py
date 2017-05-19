@@ -14,20 +14,20 @@ def user_check_history(conn, user, obj):
     
     history = [] # will contain all history
 
-    # TODO: add balance after transfer
-
     for idx in reversed(range(len(result))): 
         # if deposited
         if result[idx]['to_account'] == account_num:
             party = obj.get_user_id(result[idx]['from_account'])
             history.append([idx+1, result[idx]['tr_time'], party, 0, 
-                result[idx]['remit'], '', result[idx]['msg']])
+                result[idx]['remit'], result[idx]['to_balance'], 
+                result[idx]['msg']])
 
         # if withdrawn
         else:
             party = obj.get_user_id(result[idx]['to_account'])
             history.append([idx+1, result[idx]['tr_time'], party, 
-                result[idx]['remit'], 0, '', result[idx]['msg']])
+                result[idx]['remit'], 0, result[idx]['from_balance'], 
+                result[idx]['msg']])
 
     # make table to show
     table = tabulate(history, headers=['No.', 'Date', 'Sender/Receiver','Withdrawn amount',
