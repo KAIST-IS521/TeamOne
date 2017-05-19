@@ -276,20 +276,22 @@ def login(conn, obj):
         ret = obj.match_id_pw(name, pw)
 
         if ret == True:
-           get_user_menu(conn, name, obj)
-           return
+            account_num = obj.get_account_num(name)
+            get_user_menu(conn, name, str(account_num), obj)
+            return
        # if id or pw is not correct
         else: 
-           errmsg = ERRMSG_LOGIN
+            errmsg = ERRMSG_LOGIN
 
-def get_user_menu(conn, user, obj):
+def get_user_menu(conn, user, account_num, obj):
     errmsg = ""
 
     while True:
         # print user menu
         print_logo(conn)
         conn.sendall(b" [ User Menu ]\n" +
-                     b" Hello, " + bytes(user.encode()) + b".\n\n" +
+                     b" Hello, " + bytes(user.encode()) + b" (" +
+                     account_num.encode() + b").\n\n" +
                      b" 1. Check balance \n" + 
                      b" 2. Check transaction history \n" +
                      b" 3. Transfer \n" +
@@ -306,16 +308,16 @@ def get_user_menu(conn, user, obj):
         data = recv_line(conn)
 
         if data == '1':
-            user_check_balance(conn, user, obj)
+            user_check_balance(conn, user, account_num, obj)
 
         elif data == '2':
-            user_check_history(conn, user, obj)
+            user_check_history(conn, user, account_num, obj)
 
         elif data == '3':
-            user_transfer(conn, user, obj)
+            user_transfer(conn, user, account_num, obj)
 
         elif data == '4':
-            ret = user_mypage(conn, user, obj)
+            ret = user_mypage(conn, user, account_num, obj)
             # if user remove account or change password -> go to main
             if ret == 1: return 
 

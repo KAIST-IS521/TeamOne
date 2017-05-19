@@ -1,7 +1,7 @@
 import re
 from util import *
 
-def user_mypage(conn, user, obj):
+def user_mypage(conn, user, account_num, obj):
     # get password for confirmation
     errmsg = ""
     while True:
@@ -28,7 +28,8 @@ def user_mypage(conn, user, obj):
     while True:
         print_logo(conn)
         conn.sendall(b" [ My Account ]\n" +
-                     b" Hello, " + user.encode() + b".\n\n" +
+                     b" Hello, " + user.encode() + b" (" +
+                     account_num.encode() + b").\n\n" +
                      b" 1. Edit user info \n" +
                      b" 2. Remove account \n" +
                      b" 3. Previous menu \n\n")
@@ -42,22 +43,23 @@ def user_mypage(conn, user, obj):
         data = recv_line(conn)
 
         if data == '1':
-            return user_edit_info(conn, user, obj)
+            return user_edit_info(conn, user, account_num, obj)
             
         elif data == '2':
-            return user_remove_account(conn, user, obj)
+            return user_remove_account(conn, user, account_num, obj)
 
         elif data == '3':
             return 0
         else:
             errmsg = ERRMSG_OPTION
 
-def user_edit_info(conn, user, obj):
+def user_edit_info(conn, user, account_num, obj):
     # get every user info from DB
     info = obj.get_every_user_info(user)
 
     init_msg = (b" [ Edit User Info ]\n" + 
-                b" Hello, " + user.encode() + b".\n\n" +
+                b" Hello, " + user.encode() + b" (" +
+                account_num.encode() + b").\n\n" +
                 b" 1. Password \n" +
                 b" 2. Email : " + info['email'].encode() + b"\n" +
                 b" 3. Phone number : " + info['mobile'].encode() + b"\n" +
@@ -203,7 +205,7 @@ def edit_info(conn, user, option, msg, info, obj):
         else:
             errmsg = ERRMSG_OPTION
 
-def user_remove_account(conn, user, obj):
+def user_remove_account(conn, user, account_num, obj):
     errmsg = ""
 
     while True:
@@ -211,7 +213,8 @@ def user_remove_account(conn, user, obj):
 
         # print history & confirm message
         conn.sendall(b" [ Remove Account ]\n" + 
-                     b" Hello, " + user.encode() + b".\n\n")
+                     b" Hello, " + user.encode() + b" (" +
+                     account_num.encode() + b").\n\n")
         if errmsg:
             conn.send(errmsg)
             
