@@ -1,8 +1,8 @@
-use bankDB;
-
 -- IMPORTANT! ALL EXISTING DATA ARE DELETED
-DELETE FROM `auth_table`;
-DELETE FROM `user_table`;
+DROP SCHEMA IF EXISTS `bankDB`;
+
+source create_bankdb.sql
+use bankDB;
 
 INSERT INTO `auth_table` VALUES(
     'test',
@@ -16,7 +16,7 @@ INSERT INTO `user_table`
     'test',
     'test@test.com',
     '01012341234',
-    5000,
+    2000,
     'test'
 ), (
     'test2',

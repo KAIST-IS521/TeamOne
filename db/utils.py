@@ -8,11 +8,13 @@ class bankDB:
         '''
             localhost, root, ~
         '''
-        self.conn = pymysql.connect(host, user, password, 'bankDB', 
-                                    cursorclass=pymysql.cursors.DictCursor,
-                                    autocommit=True)
+        self.conn = pymysql.connect(host, user, password, 'bankDB',
+                                    cursorclass=pymysql.cursors.DictCursor)
 
-    
+    def __del__(self):
+        self.close_conn()
+
+
     def match_id_pw(self, user_id, user_pw):
         with self.conn.cursor() as cursor:
             sql = "SELECT * FROM `user_table` WHERE `user_id`=%s \
@@ -48,16 +50,19 @@ class bankDB:
             if not result: return False
             return result['user_id']
 
-    def store_user(self, user_id, user_pw, github_id, 
+    def store_user(self, user_id, user_pw, github_id,
                    email, mobile, balance):
         with self.conn.cursor() as cursor:
             sql = "INSERT INTO user_table(user_id, user_pw, \
                    github_id, email, mobile, balance) \
                    VALUES(%s, %s, %s, %s, %s, %s)"
             try:
-                cursor.execute(sql, (user_id, user_pw, github_id, 
+                cursor.execute(sql, (user_id, user_pw, github_id,
                                      email, mobile, balance))
+                self.conn.commit()
+                return True
             except:
+                self.conn.rollback()
                 return False
 
     def get_every_user_info(self, user_id):
@@ -74,20 +79,19 @@ class bankDB:
     def store_user_info_modification(self, user_id, info):
         with self.conn.cursor() as cursor:
             user_pw = info['user_pw']
-            account_num = info['account_num']
-            github_id = info['github_id']
             email = info['email']
             mobile = info['mobile']
 
             sql = "UPDATE user_table \
-                   SET user_pw = %s, account_num = %s, github_id = %s, \
-                       email = %s, mobile = %s \
+                   SET user_pw = %s, email = %s, mobile = %s \
                    WHERE user_id = %s"
             try:
-                cursor.execute(sql, (user_pw, account_num, github_id, 
+                cursor.execute(sql, (user_pw,
                                      email, mobile, user_id))
+                self.conn.commit()
                 return True
             except:
+                self.conn.rollback()
                 return False
 
     def remove_user_account(self, user_id):
@@ -105,15 +109,18 @@ class bankDB:
             try:
                 cursor.execute(sql, (user_id, ))
             except:
+                self.conn.rollback()
                 return False
-            
+
             sql = "INSERT INTO withdraw_account_table(user_id, account_num, \
                                                       github_id) \
                    VALUES(%s, %s, %s)"
             try:
                 cursor.execute(sql, (user_id, account_num, github_id))
+                self.conn.commit()
                 return True
             except:
+                self.conn.rollback()
                 return False
 
     def get_balance(self, user_id):
@@ -123,7 +130,7 @@ class bankDB:
             result = cursor.fetchone()
             if not result: return False # No such user
             return result['balance']
-    
+
     def update_balance(self, account, change):
         '''
         positive change => ADD to banalce
@@ -134,31 +141,37 @@ class bankDB:
                   "WHERE `user_id`=%s"
             try:
                 cursor.execute(sql, (change, account))
+                return True
             except:
                 return False
-            return True
 
     def store_transaction(self, user_id, receiver_id, amount, msg):
         with self.conn.cursor() as cursor:
-            if not self.update_balance(user_id, -amount):
-                # unable to send due to lack of balance
-                return False
-            self.update_balance(receiver_id, amount)
-            
-            sender = self.get_account_num(user_id)
-            receiver = self.get_account_num(receiver_id)
-            from_bal = self.get_balance(user_id)
-            to_bal = self.get_balance(receiver_id)
-
-            sql = "INSERT INTO `tran_table` " \
-                  "(`from_account`, `to_account`, `remit`, `msg`, " \
-                  " `from_balance`, `to_balance`) " \
-                  "VALUES(%s, %s, %s, %s, %s, %s)"
             try:
+                sender = self.get_account_num(user_id)
+                receiver = self.get_account_num(receiver_id)
+
+                sql = "INSERT INTO `tran_table` " \
+                      "(`from_account`, `to_account`, `remit`, `msg`, " \
+                      " `from_balance`, `to_balance`) " \
+                      "VALUES(%s, %s, %s, %s, %s, %s)"
+                if not self.update_balance(user_id, -amount):
+                    raise
+
+                if not self.update_balance(receiver_id, amount):
+                    raise
+
+                # AFTER update_balance
+                from_bal = self.get_balance(user_id)
+                to_bal = self.get_balance(receiver_id)
+
                 cursor.execute(sql,
                         (sender, receiver, amount, msg, from_bal, to_bal))
+
+                self.conn.commit()
                 return True
             except:
+                self.conn.rollback()
                 return False
 
     def get_all_transaction(self, user_id):
