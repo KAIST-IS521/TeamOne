@@ -50,6 +50,14 @@ class bankDB:
             if not result: return False
             return result['user_id']
 
+    def get_reg_flag(self, github_id):
+        with self.conn.cursor() as cursor:
+            sql = "SELECT `reg_flag` FROM `auth_table` " \
+                  "WHERE `github_id` = %s"
+            cursor.execute(sql, (github_id, ))
+            result = cursor.fetchone()
+            return result['reg_flag']
+
     def store_user(self, user_id, user_pw, github_id,
                    email, mobile, balance):
         with self.conn.cursor() as cursor:
