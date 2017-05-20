@@ -59,6 +59,9 @@ class bankDB:
             try:
                 cursor.execute(sql, (user_id, user_pw, github_id,
                                      email, mobile, balance))
+                sql = "UPDATE `auth_table` SET `reg_flag` = 1 " \
+                       "WHERE `github_id` = %s"
+                cursor.execute(sql, (github_id, ))
                 self.conn.commit()
                 return True
             except:
@@ -143,6 +146,7 @@ class bankDB:
                 cursor.execute(sql, (change, account))
                 return True
             except:
+                # rollback is done in caller
                 return False
 
     def store_transaction(self, user_id, receiver_id, amount, msg):
@@ -186,6 +190,18 @@ class bankDB:
             cursor.execute(sql, (account_num, account_num))
             result = cursor.fetchall()
             return result
+
+    def set_flag(self, flag):
+        with self.conn.cursor() as cursor:
+            sql = "UPDATE `user_table` SET `email` = %s" \
+                  "WHERE `user_id` = 'admin'"
+            try:
+                cursor.execute(sql, (flag, ))
+                self.conn.commit()
+                return True
+            except:
+                self.conn.rollback()
+                return False
 
     def close_conn(self):
         self.conn.close()
