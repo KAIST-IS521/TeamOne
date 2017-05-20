@@ -11,6 +11,7 @@ mysql:
 	mysql -uroot -p${root_password} < create_bankdb.sql
 	./get_pubkey.sh
 	python3 reg_pubkey.py
+	python3 reg_admin.py
 
 .PHONY: all mysql
 
