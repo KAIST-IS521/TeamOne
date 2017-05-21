@@ -130,8 +130,11 @@ def register(conn, github_id, obj):
     
     errmsg = ""
     while True:
-        # TODO: get balance
-        balance = 0
+        # provide 1000 won if new customer
+        if obj.get_reg.flag(github_id) == 0:
+            balance = 1000
+        else:
+            balance = 0
 
         # show entered user information & welcome
         print_logo(conn)
