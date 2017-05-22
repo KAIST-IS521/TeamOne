@@ -43,7 +43,7 @@ def pgp_auth(conn, obj):
             rand = generate_random(github_id)
        
             # Generate challenge for the given github_id
-            challenge = generate_challenge(github_id, rand)
+            challenge = generate_challenge(github_id, rand, input_passphrase)
 	
 	    # Send challenge and receive the response from the user
             response = get_response(conn, challenge, 1)

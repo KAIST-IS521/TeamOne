@@ -28,8 +28,9 @@ def check_registered(github_id):
 def generate_random(github_id):
     return random.getrandbits(256)
 
-# Generate a challenge (encrypted random)
-def generate_challenge(github_id, rand):
+# Generate a challenge
+# Encrypt(random) || Sign(Encrypt(random))
+def generate_challenge(github_id, rand, input_passphrase):
     # Import a public key from a certificate file
     key_data = open('../db/pubkeys/%s.pub' % github_id).read()
     pubkey = gpg.import_keys(key_data)
@@ -38,7 +39,20 @@ def generate_challenge(github_id, rand):
     encrypted_data = gpg.encrypt(hex(rand), pubkey.fingerprints[0])
     encrypted_string = str(encrypted_data)
 
-    encoded_challenge = base64.b64encode(encrypted_string.encode())
+    # Delete the imported key to use server's key
+    gpg.delete_keys(pubkey.fingerprints, True)
+    gpg.delete_keys(pubkey.fingerprints)
+
+    # Sign the encrypted random
+    signed_data = gpg.sign(encrypted_string, passphrase=input_passphrase)
+    signed_string = str(signed_data)
+
+    # Form the challenge
+    # challenge = encrypted_string + signed_string
+    challenge = signed_string
+    print("\nChallenge:\n")
+    print(challenge)
+    encoded_challenge = base64.b64encode(challenge.encode())
 
     return encoded_challenge
 
