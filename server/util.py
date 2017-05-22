@@ -24,6 +24,20 @@ def recv_line(conn):
         data.append(byte)
     return b''.join(data).decode('utf-8')
 
+# Get encrypted random
+def recv_encrypted(conn):
+    data = []
+    end_string = b'-----END PGP MESSAGE-----\n'
+    print(end_string)
+    while True:
+        byte_data = conn.recv(1024)
+        data.append(byte_data)
+        if(byte_data == end_string):
+            break
+
+    return b''.join(data).decode('utf-8')
+
+
 def get_password(conn, msg, flag):
     errmsg = ""
 
