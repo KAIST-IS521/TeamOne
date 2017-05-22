@@ -59,11 +59,3 @@ def verify_response(github_id, encrypted_string, input_passphrase):
         return  
      
     return str(decrypted_data)   
-
-# Split the challenge (For testing)
-def split_challenge(decoded_challenge):
-    challenge = decoded_challenge.split(b'-----BEGIN PGP PUBLIC KEY BLOCK-----')
-    
-    challenge[1] = b'-----BEGIN PGP PUBLIC KEY BLOCK-----' + challenge[1]
-
-    return challenge
