@@ -31,11 +31,7 @@ def generate_random(github_id):
 # Generate a challenge (encrypted random)
 def generate_challenge(github_id, rand):
     # Import a public key from a certificate file
-    if __name__ == "__main__": # FIXME - TEST
-        key_data = open('./server.pub').read()
-    else:
-        key_data = open('../db/pubkeys/%s.pub' % github_id).read()
-
+    key_data = open('../db/pubkeys/%s.pub' % github_id).read()
     pubkey = gpg.import_keys(key_data)
 
     # Encrypt the generated random using the imported public key
