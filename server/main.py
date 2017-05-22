@@ -47,10 +47,9 @@ def pgp_auth(conn, obj):
 	
 	    # Send challenge and receive the response from the user
             response = get_response(conn, challenge, 1)
-     
+
             # Decrypt the encrypted random
-            decoded_response = base64.b64decode(response)
-            decrypted_rand = verify_response(github_id, decoded_response, input_passphrase)        
+            decrypted_rand = verify_response(github_id, response, input_passphrase)        
 
             # Check if the sent and received random is identical
             if(hex(rand) == decrypted_rand):
@@ -198,10 +197,10 @@ def get_response(conn, msg, flag):
         if errmsg:
             conn.send(errmsg)
 
-        conn.send(b"\n * Encrypted response -> ")
+        conn.send(b"\n * Encrypted response ->\n")
 
-        # get github id from user
-        data = recv_line(conn)
+        # Get encrypted random number
+        data = recv_encrypted(conn)
 
         return data
 
@@ -386,7 +385,7 @@ def server():
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
     # Bind the socket to the port
-    server_address = ('localhost', 1588)
+    server_address = ('0.0.0.0', 1588)
     print('starting up on %s port %s' %server_address)
     sock.bind(server_address)
 
