@@ -3,6 +3,7 @@ import random
 import sys
 import os
 import base64
+from os.path import expanduser
 
 # global variable
 id_list = []
@@ -10,7 +11,7 @@ id_list = []
 # Initialize GPG
 def initialize_gpg():
     global gpg
-    homedir = '/home/vagrant/.gnupg'
+    homedir = expanduser("~") + "/.gnupg"
     try:
         gpg = gnupg.GPG(gnupghome=homedir) 
     except TypeError:
