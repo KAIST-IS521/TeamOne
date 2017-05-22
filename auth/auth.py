@@ -24,11 +24,6 @@ def check_registered(github_id):
              id_list.append(id)
     return github_id in id_list
 
-# Check if the requested github_id is already registered
-def check_already_registered(github_id):
-    # TODO - Access DB for this check routine
-    return True
-
 # Generate a big random number (256-bit)
 def generate_random(github_id):
     return random.getrandbits(256)
