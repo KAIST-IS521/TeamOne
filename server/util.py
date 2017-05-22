@@ -28,7 +28,6 @@ def recv_line(conn):
 def recv_encrypted(conn):
     data = []
     end_string = b'-----END PGP MESSAGE-----\n'
-    print(end_string)
     while True:
         byte_data = conn.recv(1024)
         data.append(byte_data)
