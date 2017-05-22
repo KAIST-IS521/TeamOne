@@ -1,10 +1,11 @@
 import sys, os, base64
 import gnupg
+from os.path import expanduser
 
 # Initialize GPG
 def initialize_gpg():
     global gpg
-    homedir = '/home/vagrant/.gnupg'
+    homedir = expanduser("~") + "/.gnupg"
     try:
         gpg = gnupg.GPG(gnupghome=homedir)
     except TypeError:
