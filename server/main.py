@@ -21,7 +21,7 @@ def pgp_auth(conn, obj):
                 b" Please input the following information.\n\n")
     errmsg = ""
 
-    # Get github_id 
+    # Get github_id
     while True:
         print_logo(conn)
         conn.sendall(init_msg)
@@ -33,7 +33,7 @@ def pgp_auth(conn, obj):
         # get github id from user
         github_id = get_github_id(conn, init_msg, 1)
         init_msg += (b" * GitHub ID -> " + github_id.encode() + b"\n")
-    
+
         # Initialize GPG
         initialize_gpg()
 
@@ -41,24 +41,24 @@ def pgp_auth(conn, obj):
         if(check_registered(github_id)):
             # Generate random
             rand = generate_random(github_id)
-       
+
             # Generate challenge for the given github_id
             challenge = generate_challenge(github_id, rand, input_passphrase)
-	
+
 	    # Send challenge and receive the response from the user
             response = get_response(conn, challenge, 1)
 
             # Decrypt the encrypted random
-            decrypted_rand = verify_response(github_id, response, input_passphrase)        
+            decrypted_rand = verify_response(github_id, response, input_passphrase)
 
             # Check if the sent and received random is identical
-            if(hex(rand) == decrypted_rand):
+            if(hex(rand) == decrypted_rand.rstrip()):
                 register(conn, github_id, obj)
                 break
             else:
                 init_msg += (b"PGP authentication failed!\n\n")
-                continue 
-          
+                continue
+
         else:
             init_msg += (b"GitHub ID is NOT registered!\n\n")
             continue
@@ -76,7 +76,7 @@ def register(conn, github_id, obj):
         if errmsg:
             conn.send(errmsg)
         errmsg = ""
-        
+
         if cnt == 0:
             # get user name
             name = get_username(conn, init_msg, obj, 1)
@@ -95,7 +95,7 @@ def register(conn, github_id, obj):
             # get email
             conn.sendall(b" * Email -> ")
             data = recv_line(conn)
-            
+
             regex = re.compile(REGEX_EMAIL)
 
             if data == '':
@@ -126,18 +126,18 @@ def register(conn, github_id, obj):
                 init_msg += (b" * Phone number (digit only) -> " +
                         phone.encode() + b"\n")
                 break # all processes are done
-    
+
     errmsg = ""
     while True:
         # provide 1000 won if new customer
-        if obj.get_reg.flag(github_id) == 0:
+        if obj.get_reg_flag(github_id) == 0:
             balance = 1000
         else:
             balance = 0
 
         # show entered user information & welcome
         print_logo(conn)
-        conn.sendall(b" [ Register ] \n" + 
+        conn.sendall(b" [ Register ] \n" +
                      b" Your entered information are as follows.\n\n" +
                      COR_RESULT +
                      b" # Username: " + name.encode() + b"\n" +
@@ -150,16 +150,16 @@ def register(conn, github_id, obj):
         if errmsg:
             conn.send(errmsg)
         errmsg = ""
-        
+
         conn.send(b" Would you like to register? (Y/N) -> ")
-        
+
         # get input from user
         data = recv_line(conn)
         data = data.upper()
 
         # Y -> do register
         if data == 'Y':
-            # store entered information in DB 
+            # store entered information in DB
             ret = obj.store_user(name, pw, github_id, email, phone, balance)
 
             if ret == False:
@@ -179,7 +179,7 @@ def register(conn, github_id, obj):
         elif data == 'N':
             conn.sendall(COR_ERRMSG +
                     b"\n ** Register Canceled **\n\n" + COR_BASE)
-            
+
             conn.send(b" Enter any key to return to the previous menu -> ")
             data = recv_line(conn)
             return
@@ -263,12 +263,12 @@ def login(conn, obj):
 
     while True:
         # get & store username and password
-        msg = (b" [ Login ]\n" + 
+        msg = (b" [ Login ]\n" +
                b" Please input username and password. \n\n")
 
         if errmsg:
             msg += (errmsg + b"\n")
-        
+
         name = get_username(conn, msg, obj, 0)
 
         msg += (b" * Username -> " + bytes(name.encode()) + b"\n")
@@ -282,7 +282,7 @@ def login(conn, obj):
             get_user_menu(conn, name, str(account_num), obj)
             return
        # if id or pw is not correct
-        else: 
+        else:
             errmsg = ERRMSG_LOGIN
 
 def get_user_menu(conn, user, account_num, obj):
@@ -294,7 +294,7 @@ def get_user_menu(conn, user, account_num, obj):
         conn.sendall(b" [ User Menu ]\n" +
                      b" Hello, " + bytes(user.encode()) + b" (" +
                      account_num.encode() + b").\n\n" +
-                     b" 1. Check balance \n" + 
+                     b" 1. Check balance \n" +
                      b" 2. Check transaction history \n" +
                      b" 3. Transfer \n" +
                      b" 4. Edit user info & Remove account \n" +
@@ -305,7 +305,7 @@ def get_user_menu(conn, user, account_num, obj):
         errmsg = ""
 
         conn.send(b" What would you like to do? -> ")
-        
+
         # get an option from user
         data = recv_line(conn)
 
@@ -321,7 +321,7 @@ def get_user_menu(conn, user, account_num, obj):
         elif data == '4':
             ret = user_mypage(conn, user, account_num, obj)
             # if user remove account or change password -> go to main
-            if ret == 1: return 
+            if ret == 1: return
 
         elif data == '5': # logout -> go to main
             return
@@ -345,10 +345,10 @@ def get_main_menu(conn, addr, obj):
         errmsg = ""
 
         conn.sendall(b" What would you like to do? -> ")
-    
+
         # get an option from user
         data = recv_line(conn)
-        
+
         if data == '1':
             login(conn, obj)
 
@@ -391,7 +391,7 @@ def server():
 
     # Listen for incoming connetions
     sock.listen(5)
-    
+
     while True:
         connection, client_addr = sock.accept()
 
