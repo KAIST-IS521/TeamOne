@@ -47,12 +47,7 @@ def generate_challenge(github_id, rand):
     encrypted_data = gpg.encrypt(hex(rand), pubkey.fingerprints[0])
     encrypted_string = str(encrypted_data)
 
-    # Import a server's public key for sending
-    my_key_data = open('../server.pub').read()
-
-    # Form the return string
-    challenge = encrypted_string + my_key_data
-    encoded_challenge = base64.b64encode(challenge.encode())
+    encoded_challenge = base64.b64encode(encrypted_string.encode())
 
     return encoded_challenge
 
