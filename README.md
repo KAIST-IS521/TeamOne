@@ -1,5 +1,5 @@
 # TeamOne Bank
-We are providing a virtual banking system based on `python`,`MySQL`, and `GnuPG`.
+We are providing a virtual banking system based on `python v3.4.2`,`MySQL v14.14`, and `GnuPG v1.4.18`.
 To use this system, customers need their GitHub ID and PGP key for user registration.
 After user registration, the customers can transfer money to other customers freely.
 As an opening event, the customers will earn 1,000 won after the initial registrations.
