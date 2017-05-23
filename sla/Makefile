@@ -5,10 +5,13 @@ LIB = ./
 LIBS = -lsla
 BUILDDIR = build
 
-all: $(BUILDDIR) $(BUILDDIR)/sla_auth
+all: $(BUILDDIR) $(BUILDDIR)/sla_auth $(BUILDDIR)/sla_login
 
 $(BUILDDIR):
 	mkdir -p $@
+
+$(BUILDDIR)/sla_login: sla_login.c $(BUILDDIR)
+	$(CC) $(LIBPATH) $(CFLAGS) $(LDFLAGS) -o$@ $< $(LIBS)
 
 $(BUILDDIR)/sla_auth: sla_auth.c $(BUILDDIR)
 	$(CC) $(LIBPATH) $(CFLAGS) $(LDFLAGS) -o$@ $< $(LIBS)
