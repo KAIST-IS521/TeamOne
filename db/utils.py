@@ -107,7 +107,8 @@ class bankDB:
 
     def remove_user_account(self, user_id):
         with self.conn.cursor() as cursor:
-            sql = "SELECT account_num, github_id FROM user_table WHERE user_id = %s"
+            sql = "SELECT account_num, github_id FROM user_table \
+                   WHERE user_id = %s"
             cursor.execute(sql, (user_id, ))
             info = cursor.fetchone()
             if not info:
