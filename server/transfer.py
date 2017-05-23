@@ -157,6 +157,8 @@ def get_amount(conn, user, account_num, target, obj):
             errmsg = ERRMSG_WON_NULL
         elif regex.match(data) is None:
             errmsg = ERRMSG_WON_INVAL
+        elif int(data) == 0:
+            errmsg = ERRMSG_WON_INVAL
         elif int(data) > obj.get_balance(user):
             errmsg = ERRMSG_WON_LIMIT
         else:
