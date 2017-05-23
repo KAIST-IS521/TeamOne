@@ -39,18 +39,18 @@
 
 ## Screenshots of UI (selected)
 ### Main Menu
-![main menu](./ref_image/main.png)
+![main menu](./ref_image/main.PNG)
 ### User Menu (after login)
-![user menu](./ref_image/usermenu.png)
+![user menu](./ref_image/usermenu.PNG)
 ### Check Balance
-![check balance](./ref_image/balance.png)
+![check balance](./ref_image/balance.PNG)
 ### Check Transaction History
-![check history](./ref_image/history.png)
+![check history](./ref_image/history.PNG)
 ### Transfer
-![transfer](./ref_image/transfer.png)
+![transfer](./ref_image/transfer.PNG)
 ### My Account Page
-![mypage](./ref_image/mypage.png)
+![mypage](./ref_image/mypage.PNG)
 ### Edit User Info
-![edit user info](./ref_image/modify.png)
+![edit user info](./ref_image/modify.PNG)
 ### Remove Account
-![delete account](./ref_image/delete.png)
+![delete account](./ref_image/delete.PNG)
