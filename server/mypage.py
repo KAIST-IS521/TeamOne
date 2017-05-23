@@ -2,7 +2,7 @@ import re
 from util import *
 
 def user_mypage(conn, user, account_num, obj):
-    # get password for confirmation
+    # get password for confirmation until it is correct
     errmsg = ""
     while True:
         print_logo(conn)
@@ -22,8 +22,10 @@ def user_mypage(conn, user, account_num, obj):
         elif obj.match_id_pw(user, data) == False:
             errmsg = ERRMSG_PW_WRONG
         else:
+            # if password is valid
             break
 
+    # show mypage menu and get option
     errmsg = ""
     while True:
         print_logo(conn)
@@ -43,12 +45,15 @@ def user_mypage(conn, user, account_num, obj):
         data = recv_line(conn)
 
         if data == '1':
+            # edit user information
             return user_edit_info(conn, user, account_num, obj)
             
         elif data == '2':
+            # remove user account
             return user_remove_account(conn, user, account_num, obj)
 
         elif data == '3':
+            # go to previous menu
             return 0
         else:
             errmsg = ERRMSG_OPTION
@@ -158,6 +163,7 @@ def edit_info(conn, user, option, msg, info, obj):
                 info['mobile'] = new_phone
                 break
 
+    # get reconfirmation from user about modification
     errmsg = ""
     while True:
         print_logo(conn)
@@ -178,6 +184,7 @@ def edit_info(conn, user, option, msg, info, obj):
             # store entered information in DB 
             ret = obj.store_user_info_modification(user, info)
 
+            # if succeed to store modification in DB
             if ret == True:
                 conn.sendall(COR_SUCCESS +
                         b"\n ** Modification successfully completed! **\n\n" 
@@ -211,7 +218,7 @@ def user_remove_account(conn, user, account_num, obj):
     while True:
         print_logo(conn)
 
-        # print history & confirm message
+        # print history & reconfirm message
         conn.sendall(b" [ Remove Account ]\n" + 
                      b" Hello, " + user.encode() + b" (" +
                      account_num.encode() + b").\n\n")
@@ -245,10 +252,12 @@ def remove_success(conn, user, obj):
     # remove correspoding account from DB
     ret = obj.remove_user_account(user)
     
+    # if succeed to remove user account
     if ret == True:
         conn.sendall(b"\n Your account is removed successfully.\n" +
                      b" Thank you for using our bank so far.\n\n" +
                      b" Enter any key to return to the main menu -> ")
+    # if fail to remove user account
     else:
         conn.send(b"\n ** Removing Account Canceled ** \n" +
                   b"\n Enter any key to return to the previous menu -> ")

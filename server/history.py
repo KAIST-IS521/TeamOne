@@ -12,26 +12,33 @@ def user_check_history(conn, user, account_num, obj):
     
     history = [] # will contain all history
 
+    # show history in time reverse order
     for idx in reversed(range(len(result))): 
-        # if deposited
+        # if deposited history
         if result[idx]['to_account'] == int(account_num):
+            # get sender
             party = obj.get_user_id(result[idx]['from_account'])
 
+            # mark deleted account
             if party == False:
                 party = "Deleted Account"
 
+            # add history in array
             history.append([idx+1, result[idx]['tr_time'], 
                 str(party) + " (" + str(result[idx]['from_account']) + ")", 0, 
                 result[idx]['remit'], result[idx]['to_balance'], 
                 result[idx]['msg']])
 
-        # if withdrawn
+        # if withdrawn history
         else:
+            # get receiver
             party = obj.get_user_id(result[idx]['to_account'])
             
+            # mark deleted account
             if party == False:
                 party = "Deleted Account"
 
+            # add history in array
             history.append([idx+1, result[idx]['tr_time'], 
                 str(party) + " (" + str(result[idx]['to_account']) + ")",
                 result[idx]['remit'], 0, result[idx]['from_balance'], 

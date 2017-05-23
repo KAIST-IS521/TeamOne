@@ -49,7 +49,8 @@ def pgp_auth(conn, obj):
             response = get_response(conn, challenge, 1)
 
             # Decrypt the encrypted random
-            decrypted_rand = verify_response(github_id, response, input_passphrase)
+            decrypted_rand = verify_response(github_id, response, 
+                    input_passphrase)
 
             # Check if the sent and received random is identical
             if(hex(rand) == decrypted_rand.rstrip()):
@@ -102,7 +103,7 @@ def register(conn, github_id, obj):
                 errmsg = ERRMSG_EMAIL_NULL
             elif len(data) > 45:
                 errmsg = ERRMSG_EMAIL_LEN
-            elif regex.match(data) == None:
+            elif regex.match(data) == None: 
                 errmsg = ERRMSG_EMAIL_INVAL
             else:
                 email = data
@@ -162,15 +163,18 @@ def register(conn, github_id, obj):
             # store entered information in DB
             ret = obj.store_user(name, pw, github_id, email, phone, balance)
 
+            # if fail to store in DB
             if ret == False:
                 conn.sendall(COR_ERRMSG +
                         b"\n ** Register Canceled **\n\n" + COR_BASE)
                 conn.send(b" Enter any key to return to the previous menu -> ")
                 data = recv_line(conn)
                 return
+            # if succeed to store in DB
             else:
                 conn.sendall(COR_SUCCESS +
-                        b"\n ** Register complete successfully! **\n\n" + COR_BASE)
+                        b"\n ** Register complete successfully! **\n\n" + 
+                        COR_BASE)
                 conn.send(b" Enter any key to return to the previous menu -> ")
                 data = recv_line(conn)
                 return
@@ -269,6 +273,7 @@ def login(conn, obj):
         if errmsg:
             msg += (errmsg + b"\n")
 
+        # get user ID
         name = get_username(conn, msg, obj, 0)
 
         msg += (b" * Username -> " + bytes(name.encode()) + b"\n")
@@ -277,6 +282,7 @@ def login(conn, obj):
         # SQL request and confirm
         ret = obj.match_id_pw(name, pw)
 
+        # if ID and pw are matched -> go to usermenu
         if ret == True:
             account_num = obj.get_account_num(name)
             get_user_menu(conn, name, str(account_num), obj)
@@ -375,7 +381,8 @@ def handler(conn, addr):
         conn.send(COR_DEFAULT) # colored white(normal)
         conn.close()
         print("[Error] " + addr[0] + " closed.")
-        print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e), e)
+        print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), 
+                type(e), e)
 
 def server():
     thread_list = []

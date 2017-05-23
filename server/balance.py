@@ -8,7 +8,8 @@ def user_check_balance(conn, user, account_num, obj):
     conn.sendall(b" [ Check Balance ]\n" +
                  b" Hello, " + user.encode() + b" (" + 
                  account_num.encode() + b").\n\n" + COR_RESULT + 
-                 b" Balance: " + bytes(str(balance).encode()) + b" won\n\n" + COR_BASE)
+                 b" Balance: " + bytes(str(balance).encode()) + b" won\n\n" + 
+                 COR_BASE)
         
     conn.send(b" Enter any key to return to the previous menu -> ")
         

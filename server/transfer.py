@@ -3,6 +3,7 @@ from datetime import datetime
 import re
 
 def print_transfer(conn, user, receiver, amount, date, msg, balance):
+    # print transfer details
     conn.sendall(COR_RESULT +
                  b" # Sender: " + user.encode() + b"\n" +
                  b" # Receiver: " + receiver.encode() + b"\n" +
@@ -16,8 +17,13 @@ def print_transfer(conn, user, receiver, amount, date, msg, balance):
         conn.sendall(b"\n" + COR_BASE)
 
 def user_transfer(conn, user, account_num, obj):
+    # get receiver from user
     receiver = get_receiver(conn, user, account_num, obj)
+
+    # get amount to transfer
     amount = get_amount(conn, user, account_num, receiver, obj)
+
+    # get transfer message
     message = get_message(conn, user, account_num, receiver, amount)
 
     # get current transfer time
@@ -28,7 +34,7 @@ def user_transfer(conn, user, account_num, obj):
     while True:
         print_logo(conn)
 
-        # print history & confirm message
+        # print entered transfer details & confirm message
         conn.sendall(b" [ Transfer ]\n" + 
                      b" Hello, " + user.encode() + b" (" +
                      account_num.encode() + b").\n\n" +
@@ -54,9 +60,11 @@ def user_transfer(conn, user, account_num, obj):
         if data == 'Y':
             ret = obj.store_transaction(user, receiver, int(amount), message)
             
+            # if succeed to transfer
             if ret is True:
                 transfer_success(conn, user, account_num, receiver, amount, 
                         message, obj)
+            # if fail to transfer
             else:
                 transfer_cancel(conn, user, account_num, obj)
             return
@@ -71,6 +79,8 @@ def user_transfer(conn, user, account_num, obj):
 
 def transfer_success(conn, user, account_num, receiver, amount, msg, obj):
     balance = obj.get_balance(user) # get balance from DB
+
+    # get real transfer time after getting user reconfimation
     date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     
     print_logo(conn)
@@ -91,6 +101,7 @@ def transfer_success(conn, user, account_num, receiver, amount, msg, obj):
 def transfer_cancel(conn, user, account_num, obj):
     balance = obj.get_balance(user) # get balance from DB
 
+    # print transfer cancel message
     print_logo(conn)
     conn.sendall(b" [ Transfer ] \n" + 
                  b" Hello, " + user.encode() + b" (" +
@@ -153,6 +164,7 @@ def get_amount(conn, user, account_num, target, obj):
         # check amount is valid or not
         regex = re.compile(REGEX_AMOUNT)
 
+        # amount should be not zero and lower than balance
         if data == '':
             errmsg = ERRMSG_WON_NULL
         elif regex.match(data) is None:
