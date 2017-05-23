@@ -39,7 +39,7 @@ As an opening event, the customers will earn 1,000 won after the initial registr
 ## How to launch the banking server
 ```
 ~/TeamOne$ cd server
-~/TeamOne/server$  python3 main.py passphrase
+~/TeamOne/server$ python3 main.py <passphrase>
 ```
 
 ## How to access the banking system
@@ -50,6 +50,6 @@ As an opening event, the customers will earn 1,000 won after the initial registr
 ## How to launch the flag updater
 ```
 ~/TeamOne$ cd auth
-~/TeamOne/auth$  sudo python3 flagupdater.py passphrase
+~/TeamOne/auth$ sudo python3 flagupdater.py <passphrase>
 ```
 

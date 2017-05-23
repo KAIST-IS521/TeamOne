@@ -38,3 +38,22 @@ Then, this module decrypts the encrypted response from the user.
    ```
    ~$ gpg --recipient "Happyhacking TeamOne" --output encrypted.txt.asc --armor --encrypt decrypted.txt
    ```
+
+## `flagupdater.py`
+A flag updater is standalone program for updating new flag.
+If flag updater verifies the signature of the JSON message, updates the email address field of “admin” in bank database with the given flag string.
+
+### How to Run
+1. Check your team secret and passphrase. Your team's secret key must locate at /home/vagrant/.gnupg/.
+    ```
+    ~$ gpg -K
+    /home/vagrant/.gnupg/secring.gpg
+    --------------------------------
+    sec   2048R/3C16E5B3 2017-05-16 [expires: 2019-05-16]
+    uid                  Happyhacking TeamOne <TeamOne@bank.com>
+    ssb   2048R/9EFDDAF8 2017-05-16
+    ```
+2. Runs as a daemon listening on port 42. You should run with sudo for using privileged port.
+    ```
+    ~$ sudo python3 flagupdater.py <passphrase>
+    ```
