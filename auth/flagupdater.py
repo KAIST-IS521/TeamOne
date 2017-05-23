@@ -37,7 +37,7 @@ def isTA(signer):
     return False
 
 def decrypt(data):
-    objdata = gpg.decrypt(data, passphrase=input_passphrase, always_trust=True)		# armor is mandatory requirement
+    objdata = gpg.decrypt(data, passphrase=input_passphrase, always_trust=True)
     if objdata.ok != True :
         return False
     return str(objdata)
@@ -58,16 +58,17 @@ def saveflag(recvdata):
         print("Error : " + jd['signer'] + " is not TA. Kicked!")
         return False
 
-    # Verify signature, armor is mandatory.
-    # signature has sign only. build an armor for gnupg
+    # Verify signature ( pgp armor is mandatory )
+    ## if signature has sign only, use this armor
     pgparmor  = "-----BEGIN PGP SIGNED MESSAGE-----"+"\n"+"Hash: SHA1"+"\n\n"   
     pgparmor += data + "\n"
     pgparmor += "-----BEGIN PGP SIGNATURE-----"+"\n"+"Version: GnuPG v1"+"\n\n"
     pgparmor += jd['signature'] + "\n"
     pgparmor += "-----END PGP SIGNATURE-----"+"\n"
+    ## if signature has data and sign, use following armor
+    #pgparmor = "-----BEGIN PGP MESSAGE-----"+"\n"+jd['signature'])
+
     verified = gpg.verify(pgparmor)
-    # if signature has data and sign,
-    #verified = gpg.verify("-----BEGIN PGP MESSAGE-----\n"+jd['signature'])		# signature has data and sign
 
     if not verified:
         print ("Error : PGP signature BAD")
