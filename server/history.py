@@ -16,6 +16,10 @@ def user_check_history(conn, user, account_num, obj):
         # if deposited
         if result[idx]['to_account'] == int(account_num):
             party = obj.get_user_id(result[idx]['from_account'])
+
+            if party == False:
+                party = "Deleted Account"
+
             history.append([idx+1, result[idx]['tr_time'], 
                 str(party) + " (" + str(result[idx]['from_account']) + ")", 0, 
                 result[idx]['remit'], result[idx]['to_balance'], 
@@ -24,14 +28,19 @@ def user_check_history(conn, user, account_num, obj):
         # if withdrawn
         else:
             party = obj.get_user_id(result[idx]['to_account'])
+            
+            if party == False:
+                party = "Deleted Account"
+
             history.append([idx+1, result[idx]['tr_time'], 
                 str(party) + " (" + str(result[idx]['to_account']) + ")",
                 result[idx]['remit'], 0, result[idx]['from_balance'], 
                 result[idx]['msg']])
 
     # make table to show
-    table = tabulate(history, headers=['No.', 'Date', 'Sender/Receiver','Withdrawn amount',
-                 'Deposited amount', 'Balance', 'Message'], tablefmt='orgtbl')
+    table = tabulate(history, headers=['No.', 'Date', 'Sender/Receiver',
+        'Withdrawn amount', 'Deposited amount', 'Balance', 'Message'], 
+        tablefmt='orgtbl')
     conn.sendall(table.encode())
     
     conn.sendall(COR_BASE +
