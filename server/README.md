@@ -36,3 +36,21 @@
   * In case of changing password or delete user account, user will be signed out and will return to the very first menu.
 
 * [const.py](const.py) : This file contains all constants used in Bank system as follows: `1) context-sensitive error message, 2) ANSI code to colorize console, 3) regular expression to filter user input`, and so on.
+
+## Screenshots of UI (selected)
+### Main Menu
+![main menu](./ref_image/main.png)
+### User Menu (after login)
+![user menu](./ref_image/usermenu.png)
+### Check Balance
+![check balance](./ref_image/balance.png)
+### Check Transaction History
+![check history](./ref_image/history.png)
+### Transfer
+![transfer](./ref_image/transfer.png)
+### My Account Page
+![mypage](./ref_image/mypage.png)
+### Edit User Info
+![edit user info](./ref_image/modify.png)
+### Remove Account
+![delete account](./ref_image/delete.png)
