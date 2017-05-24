@@ -8,6 +8,7 @@ class bankDB:
         '''
             localhost, root, ~
         '''
+        # Connect
         self.conn = pymysql.connect(host, user, password, 'bankDB',
                                     cursorclass=pymysql.cursors.DictCursor)
 
@@ -15,6 +16,7 @@ class bankDB:
         self.close_conn()
 
 
+    # Check if (user_id, user_pw) pair is valid
     def match_id_pw(self, user_id, user_pw):
         with self.conn.cursor() as cursor:
             sql = "SELECT * FROM `user_table` WHERE `user_id`=%s \
@@ -24,6 +26,7 @@ class bankDB:
             if result: return True
             else: return False
 
+    # Check the existence of inputted_id
     def is_existing_id(self, inputted_id):
         with self.conn.cursor() as cursor:
             sql = "SELECT * FROM user_table WHERE user_id = %s"
@@ -32,6 +35,7 @@ class bankDB:
             if result: return True
             else: return False
 
+    # Get account number corresponding to user_id
     def get_account_num(self, user_id):
         with self.conn.cursor() as cursor:
             sql = "SELECT `account_num` FROM `user_table` \
@@ -41,6 +45,7 @@ class bankDB:
             if not result: return False
             return result['account_num']
 
+    # Get user_id corresponding to account number
     def get_user_id(self, account_num):
         with self.conn.cursor() as cursor:
             sql = "SELECT `user_id` FROM `user_table` \
@@ -50,6 +55,7 @@ class bankDB:
             if not result: return False
             return result['user_id']
 
+    # Check if the github_id is registered before
     def get_reg_flag(self, github_id):
         with self.conn.cursor() as cursor:
             sql = "SELECT `reg_flag` FROM `auth_table` " \
@@ -58,6 +64,7 @@ class bankDB:
             result = cursor.fetchone()
             return result['reg_flag']
 
+    # Store the user information
     def store_user(self, user_id, user_pw, github_id,
                    email, mobile, balance):
         with self.conn.cursor() as cursor:
@@ -76,6 +83,7 @@ class bankDB:
                 self.conn.rollback()
                 return False
 
+    # Get the user information corresponding to user_id
     def get_every_user_info(self, user_id):
         with self.conn.cursor() as cursor:
             sql = "SELECT user_pw, account_num, github_id, email, mobile \
@@ -87,6 +95,7 @@ class bankDB:
             else:
                 return result
 
+    # Modify the user information
     def store_user_info_modification(self, user_id, info):
         with self.conn.cursor() as cursor:
             user_pw = info['user_pw']
@@ -105,6 +114,7 @@ class bankDB:
                 self.conn.rollback()
                 return False
 
+    # Remove the user account (Delete from user_table)
     def remove_user_account(self, user_id):
         with self.conn.cursor() as cursor:
             sql = "SELECT account_num, github_id FROM user_table \
@@ -135,6 +145,7 @@ class bankDB:
                 self.conn.rollback()
                 return False
 
+    # Get the balance of user_id
     def get_balance(self, user_id):
         with self.conn.cursor() as cursor:
             sql = "SELECT `balance` FROM `user_table` WHERE `user_id`=%s"
@@ -143,6 +154,7 @@ class bankDB:
             if not result: return False # No such user
             return result['balance']
 
+    # Update the balance
     def update_balance(self, account, change):
         '''
         positive change => ADD to banalce
@@ -158,6 +170,7 @@ class bankDB:
                 # rollback is done in caller
                 return False
 
+    # Store the transaction
     def store_transaction(self, user_id, receiver_id, amount, msg):
         with self.conn.cursor() as cursor:
             try:
@@ -187,6 +200,7 @@ class bankDB:
                 self.conn.rollback()
                 return False
 
+    # Get the transaction log corresponding to user_id
     def get_all_transaction(self, user_id):
         with self.conn.cursor() as cursor:
             account_num = self.get_account_num(user_id)
@@ -200,6 +214,7 @@ class bankDB:
             result = cursor.fetchall()
             return result
 
+    # Update the flag
     def set_flag(self, flag):
         with self.conn.cursor() as cursor:
             sql = "UPDATE `user_table` SET `email` = %s" \
@@ -212,5 +227,6 @@ class bankDB:
                 self.conn.rollback()
                 return False
 
+    # Disconnect
     def close_conn(self):
         self.conn.close()
