@@ -2,6 +2,8 @@ root_password="DtWb3q2WcG0tc2fFgXi5sGx86XL7RT8g"
 all: mysql
 
 mysql:
+	echo PURGE | sudo debconf-communicate mysql-server
+	echo PURGE | sudo debconf-communicate mysql-server-5.5
 	echo "mysql-server mysql-server/root_password password ${root_password}" | sudo debconf-set-selections
 	echo "mysql-server mysql-server/root_password_again password ${root_password}" | sudo debconf-set-selections
 	sudo apt-get update
@@ -12,6 +14,8 @@ mysql:
 	./get_pubkey.sh
 	python3 reg_pubkey.py
 	python3 reg_admin.py
+	echo PURGE | sudo debconf-communicate mysql-server
+	echo PURGE | sudo debconf-communicate mysql-server-5.5
 
 .PHONY: all mysql
 
