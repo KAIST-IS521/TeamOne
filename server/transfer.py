@@ -61,7 +61,7 @@ def user_transfer(conn, user, account_num, obj):
             ret = obj.store_transaction(user, receiver, int(amount), message)
             
             # if succeed to transfer
-            if ret is True:
+            if ret == True:
                 transfer_success(conn, user, account_num, receiver, amount, 
                         message, obj)
             # if fail to transfer
@@ -135,8 +135,8 @@ def get_receiver(conn, user, account_num, obj):
 
         if data == '':
             errmsg = ERRMSG_RECV_NULL
-        elif (regex.match(data) is None or
-                obj.is_existing_id(data) is False or
+        elif (regex.match(data) == None or
+                obj.is_existing_id(data) == False or
                 user == data): # if sender == receiver
             errmsg = ERRMSG_RECV_INVAL
         else:
@@ -167,7 +167,7 @@ def get_amount(conn, user, account_num, target, obj):
         # amount should be not zero and lower than balance
         if data == '':
             errmsg = ERRMSG_WON_NULL
-        elif regex.match(data) is None:
+        elif regex.match(data) == None:
             errmsg = ERRMSG_WON_INVAL
         elif int(data) == 0:
             errmsg = ERRMSG_WON_INVAL
