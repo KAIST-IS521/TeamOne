@@ -12,8 +12,8 @@ As an opening event, the customers will earn 1,000 won after the initial registr
    * ID/Password is created when the customer is registered.
 2. **Register**
    * To create an account, the customer needs to register the banking system.
-   * For this, the customer inputs GitHub ID and receives the encrypted challenge from the banking system.
-   * Using the BASE64-encoded challenge, the customer generates the encrypted response for PGP authentication.
+   * For this, the customer inputs GitHub ID and receives the signed and encrypted challenge from the banking system.
+   * Using the signed and encryted challenge, the customer generates the encrypted response for PGP authentication.
    * After the PGP authentication succeeds, the customer can create his/her account by entering ID, Password, e-mail, and cellphone number.
 3. **Terminate**
    * The customer can exit this banking system.
