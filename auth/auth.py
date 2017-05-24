@@ -19,7 +19,7 @@ def initialize_gpg():
 
 # Check if the registered githubId
 def check_registered(github_id):
-    with open("../db/github_id.list") as file:
+    with open("./db/github_id.list") as file:
          for id in file:
              id = id.strip()
              id_list.append(id)
@@ -33,16 +33,17 @@ def generate_random(github_id):
 # Encrypt(random) || Sign(Encrypt(random))
 def generate_challenge(github_id, rand, input_passphrase):
     # Import a public key from a certificate file
-    key_data = open('../db/pubkeys/%s.pub' % github_id).read()
+    key_data = open('./db/pubkeys/%s.pub' % github_id).read()
     pubkey = gpg.import_keys(key_data)
 
     # Import a public key of server
-    my_key_data = open('../server.pub').read()
+    my_key_data = open('./server.pub').read()
     my_pubkey = gpg.import_keys(my_key_data)
 
     # Encrypt the generated random using the imported public key
     encrypted_data = gpg.encrypt(hex(rand), pubkey.fingerprints[0], 
-                                 default_key=my_pubkey.fingerprints[0], passphrase=input_passphrase)
+                                 default_key=my_pubkey.fingerprints[0], 
+                                 passphrase=input_passphrase)
     encrypted_string = str(encrypted_data)
 
     #return encoded_challenge
@@ -50,7 +51,8 @@ def generate_challenge(github_id, rand, input_passphrase):
 
 # Verify the response from the user
 def verify_response(github_id, encrypted_string, input_passphrase):
-    decrypted_data = gpg.decrypt(encrypted_string, passphrase=input_passphrase)
+    decrypted_data = gpg.decrypt(encrypted_string, 
+                                 passphrase=input_passphrase)
 
     if(decrypted_data.ok != True):
         print("Failed to decrypt the response!")

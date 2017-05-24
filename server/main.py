@@ -8,18 +8,19 @@ from .transfer import *
 from .mypage import *
 
 # get current & parent execution path
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+currentdir = os.path.dirname(
+                os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
+db_path = parentdir + "/db"
+auth_path = parentdir + "/auth"
+sys.path.insert(0, db_path)
+sys.path.insert(0, auth_path)
 
-from db import utils
-from auth import auth
-
-# global variable
-input_passphrase = ""
+import utils
+from auth import *
 
 # PGP-authentication for registration
-def pgp_auth(conn, obj):
+def pgp_auth(conn, obj, g_passphrase):
     init_msg = (b" [ PGP Authentication ]\n" +
                 b" Please input the following information.\n\n")
     errmsg = ""
@@ -46,14 +47,14 @@ def pgp_auth(conn, obj):
             rand = generate_random(github_id)
 
             # Generate challenge for the given github_id
-            challenge = generate_challenge(github_id, rand, input_passphrase)
+            challenge = generate_challenge(github_id, rand, g_passphrase)
             
             # Send challenge and receive the response from the user
             response = get_response(conn, challenge, 1)
 
             # Decrypt the encrypted random
             decrypted_rand = verify_response(github_id, response, 
-                    input_passphrase)
+                    g_passphrase)
 
             # Check if the sent and received random is identical
             if(hex(rand) == decrypted_rand.rstrip()):
@@ -338,7 +339,7 @@ def get_user_menu(conn, user, account_num, obj):
         else:
             errmsg = ERRMSG_OPTION
 
-def get_main_menu(conn, addr, obj):
+def get_main_menu(conn, addr, obj, g_passphrase):
     errmsg = ""
 
     while True:
@@ -362,7 +363,7 @@ def get_main_menu(conn, addr, obj):
             login(conn, obj)
 
         elif data == '2':
-            pgp_auth(conn, obj)
+            pgp_auth(conn, obj, g_passphrase)
 
         elif data == '3': # terminate program
             # close the connection
@@ -374,10 +375,10 @@ def get_main_menu(conn, addr, obj):
         else:
             errmsg = ERRMSG_OPTION
 
-def handler(conn, addr):
+def handler(conn, addr, g_passphrase):
     try:
         obj = utils.bankDB()
-        get_main_menu(conn, addr, obj)
+        get_main_menu(conn, addr, obj, g_passphrase)
 
     except Exception as e:
         # Close the connection
@@ -390,7 +391,7 @@ def handler(conn, addr):
         except:
             print("handler exception")
 
-def server():
+def server(input_passphrase):
     thread_list = []
 
     # Create a TCP/IP socket
@@ -408,7 +409,8 @@ def server():
     while True:
         connection, client_addr = sock.accept()
 
-        thread = Thread(target=handler, args=(connection, client_addr))
+        thread = Thread(target=handler, args=(connection, client_addr, 
+                                              input_passphrase))
         thread_list.append(thread)
         thread.start()
 

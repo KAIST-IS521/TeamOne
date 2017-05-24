@@ -6,7 +6,7 @@ try:
     # Get a passphrase from commandline argument
     if len(sys.argv) == 2:
         input_passphrase = str(sys.argv[1])
-        server()
+        server(input_passphrase)
     else:
         print ("Give me passphrase")
 except KeyboardInterrupt:

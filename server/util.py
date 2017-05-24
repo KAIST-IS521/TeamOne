@@ -27,7 +27,7 @@ def recv_line(conn):
             if byte == b'':
                 break
         except e:
-            print("socket exeception")
+            print("socket exception")
         if byte == b'\n':
             break
         data.append(byte)
@@ -38,11 +38,15 @@ def recv_encrypted(conn):
     data = []
     end_string = b'-----END PGP MESSAGE-----\n'
     while True:
-        byte_data = conn.recv(1024)
+        try:
+            byte_data = conn.recv(1024)
+            if byte_data == b'':
+                break
+        except e:
+            print("socket exception")
         data.append(byte_data)
         if(byte_data == end_string):
             break
-
     return b''.join(data).decode('utf-8')
 
 
