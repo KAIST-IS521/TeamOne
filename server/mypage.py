@@ -1,5 +1,5 @@
 import re
-from util import *
+from .util import *
 
 def user_mypage(conn, user, account_num, obj):
     # get password for confirmation until it is correct

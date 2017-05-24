@@ -1,0 +1,10 @@
+#!/usr/bin/env python3
+import sys
+from server.main import server
+
+try:
+    # Get a passphrase from commandline argument
+    input_passphrase = str(sys.argv[1])
+    server()
+except KeyboardInterrupt:
+    print ("Ctrl_C pressed ... Shutting Down")

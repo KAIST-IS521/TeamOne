@@ -1,4 +1,4 @@
-from const import *
+from .const import *
 
 def print_logo(conn):
     conn.send(CLEAR_TERMINAL + COR_LOGO) # clear terminal & colored

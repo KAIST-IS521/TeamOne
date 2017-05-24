@@ -1,16 +1,19 @@
-import socket, sys, re, base64
+import socket, sys, re, base64, os, inspect
 from threading import Thread
-from const import *
-from util import *
-from balance import *
-from history import *
-from transfer import *
-from mypage import *
+from .const import *
+from .util import *
+from .balance import *
+from .history import *
+from .transfer import *
+from .mypage import *
 
-sys.path.insert(0, '../db')
-sys.path.insert(0, '../auth')
-import utils
-from auth import *
+# get current & parent execution path
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir)
+
+from db import utils
+from auth import auth
 
 # global variable
 input_passphrase = ""
@@ -410,11 +413,3 @@ def server():
             if not thread.isAlive():
                 thread_list.remove(thread)
                 thread.join()
-
-if __name__ == "__main__":
-    try:
-        # Get a passphrase from commandline argument
-        input_passphrase = str(sys.argv[1])
-        server()
-    except KeyboardInterrupt:
-        print ("Ctrl_C pressed ... Shutting Down")

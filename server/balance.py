@@ -1,4 +1,4 @@
-from util import *
+from .util import *
 
 def user_check_balance(conn, user, account_num, obj):
     # get user's balance from DB

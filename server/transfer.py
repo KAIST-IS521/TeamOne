@@ -1,4 +1,4 @@
-from util import *
+from .util import *
 from datetime import datetime
 import re
 

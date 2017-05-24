@@ -1,5 +1,5 @@
 from tabulate import tabulate
-from util import *
+from .util import *
 
 def user_check_history(conn, user, account_num, obj):
     print_logo(conn)
