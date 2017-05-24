@@ -47,7 +47,7 @@ def user_mypage(conn, user, account_num, obj):
         if data == '1':
             # edit user information
             return user_edit_info(conn, user, account_num, obj)
-            
+
         elif data == '2':
             # remove user account
             return user_remove_account(conn, user, account_num, obj)
@@ -74,7 +74,7 @@ def user_edit_info(conn, user, account_num, obj):
     while True:
         print_logo(conn)
         conn.sendall(init_msg)
-        
+
         if errmsg:
             conn.send(errmsg)
         errmsg = ""
@@ -114,7 +114,7 @@ def edit_info(conn, user, option, msg, info, obj):
     while True:
         print_logo(conn)
         conn.sendall(msg)
-        
+
         if errmsg:
             conn.send(errmsg)
 
@@ -131,7 +131,7 @@ def edit_info(conn, user, option, msg, info, obj):
             data = recv_line(conn)
 
             regex = re.compile(REGEX_EMAIL)
-            
+
             if data == '':
                 errmsg = ERRMSG_EMAIL_NULL
             elif len(data) > 45:
@@ -151,7 +151,7 @@ def edit_info(conn, user, option, msg, info, obj):
             data = recv_line(conn)
             
             regex = re.compile(REGEX_PHONE)
-	    
+
             if data == '':
                 errmsg = ERRMSG_PHONE_NULL
             elif regex.match(data) == None:
