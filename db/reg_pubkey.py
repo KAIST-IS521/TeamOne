@@ -14,10 +14,10 @@ def get_pgp_key(github_id):
 
 # Register github_id, pgp_key, reg_flag
 def register_info(github_id):
-    conn = pymysql.connect(host = 'localhost', 
-                           user = 'root', 
-                           password = 'DtWb3q2WcG0tc2fFgXi5sGx86XL7RT8g', 
-                           db = 'bankDB', 
+    conn = pymysql.connect(host = 'localhost',
+                           user = 'root',
+                           password = open("root.pw","rt").read(),
+                           db = 'bankDB',
                            charset = 'utf8')
     curs = conn.cursor()
 
