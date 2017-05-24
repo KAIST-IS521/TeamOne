@@ -381,11 +381,14 @@ def handler(conn, addr):
 
     except Exception as e:
         # Close the connection
-        conn.send(COR_DEFAULT) # colored white(normal)
-        conn.close()
-        print("[Error] " + addr[0] + " closed.")
-        print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), 
+        try:
+            conn.send(COR_DEFAULT) # colored white(normal)
+            conn.close()
+            print("[Error] " + addr[0] + " closed.")
+            print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), 
                 type(e), e)
+        except:
+            print("handler exception")
 
 def server():
     thread_list = []
