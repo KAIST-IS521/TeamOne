@@ -1,9 +1,11 @@
-import pymysql.cursors
+import pymysql.cursors, os, inspect
+path = os.path.abspath(inspect.getfile(inspect.currentframe()))
+currentdir = os.path.dirname(path)
 
 class bankDB:
     def __init__(self, host='localhost',
                        user='root',
-                       password = open("root.pw","rt").read(),
+                       password = open(currentdir+"/root.pw","rt").read(),
                        db='bankDB'):
         '''
             localhost, root, ~
