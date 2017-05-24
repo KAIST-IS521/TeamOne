@@ -1,4 +1,5 @@
 #!/bin/bash
+python3 gen_root_pw.py
 root_password=$(cat ./root.pw)
 echo PURGE | sudo debconf-communicate mysql-server
 echo PURGE | sudo debconf-communicate mysql-server-5.5
