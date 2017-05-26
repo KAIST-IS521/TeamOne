@@ -22,6 +22,13 @@
 #define UNAME "Happyhacking TeamOne"
 #define AUTH_SUCCESS "Username ->"
 
+
+/* 
+ * Some functions come from https://github.com/seiyak/GPGME-sample-code
+ * - fail_if_err()
+ * - print_data()
+ */
+
 #define fail_if_err(err	)                                       \
   do                                                            \
     {                                                           \
@@ -35,7 +42,10 @@
     }                                                           \
   while (0)
 
-/* read gpgme */
+/* read gpgme
+ * - modify the function in 
+     https://github.com/KAIST-IS521/TeamThree/blob/master/slalib/
+ */
 void read_data_gpgme(char* buffer, int* len, gpgme_data_t data){
 
 	ssize_t nbytes;
@@ -170,8 +180,6 @@ int handshake2(int sock, const char* ID, const char* privKeyPath,
      gpgme_ctx_t ctx;
      gpgme_error_t err;
      gpgme_data_t in, out, plain;
-     gpgme_decrypt_result_t decrypt_result;
-     gpgme_encrypt_result_t encrypt_result;
 
      // initialize GPGME
      gpgme_check_version(NULL);
@@ -237,7 +245,7 @@ int handshake2(int sock, const char* ID, const char* privKeyPath,
      err = gpgme_op_decrypt_verify(ctx, in, plain);
      fail_if_err(err);
 
-     decrypt_result = gpgme_op_decrypt_result(ctx);
+     gpgme_op_decrypt_result(ctx);
      gpgme_data_seek(plain, 0, SEEK_SET);
   
      // encrypt the random using the server key
@@ -245,7 +253,7 @@ int handshake2(int sock, const char* ID, const char* privKeyPath,
                             plain, out);
      fail_if_err(err);
 
-     encrypt_result = gpgme_op_encrypt_result(ctx);
+     gpgme_op_encrypt_result(ctx);
      char buffer[MAX_LEN*4];
      int enc_len = 0;
      memset(buffer, 0, sizeof(buffer));
