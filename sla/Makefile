@@ -5,7 +5,11 @@ LIB = ./
 LIBS = -lsla
 BUILDDIR = build
 
-all: $(BUILDDIR) $(BUILDDIR)/sla_auth $(BUILDDIR)/sla_login
+all: packages $(BUILDDIR) $(BUILDDIR)/sla_auth $(BUILDDIR)/sla_login
+
+packages:
+	sudo apt-get install libgpgme11-dev
+	sudo apt-get install libssl-dev
 
 $(BUILDDIR):
 	mkdir -p $@
