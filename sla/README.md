@@ -1,11 +1,22 @@
-# SLA
+# SLA Checkers
 
-1. `gen_response.py`
-    * Generate a client's response to the challenge from the banking server
-    * Assume that your private key is already imported in GPG
-    * Execute as follows:
-      * `passphrase`: passphrase for the private key
-      * `encoded_challenge`: the challenge sent from the banking server
-    ```
-    > python3 gen_response.py passphrase encoded_challange
-    ```
+1. `sla_auth.c`
+    * SLA checker for PGP authentication
+    * Use two APIs in `slalib`: `openTCPSock()` and `closeSock()`
+    * Implement own APIs: `sendMsg2()`, `recvMsgUntil2()`, and `handshake2()`
+    * Use `libgpgme11-dev` for GPG operations: `gpgme_op_decrypt_verify()` and `gpgme_op_encrypt()`
+    * Assume that the public key of `bank` is imported in GPG (`uid`: `Happyhacking TeamOne`)
+
+2. `sla_login.c`
+
+# How to Use
+## Build the SLA Checkers
+```
+~/TeamOne$ cd sla
+~/TeamOne/sla$ make
+```
+
+## How to execute `sla_auth`
+```
+~/TeamOne/sla$ ./build/sla_auth <ip> <port> <github_id> <private key path> <passphrase path>
+```
