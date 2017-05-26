@@ -36,7 +36,7 @@ def recv_line(conn):
 # Get encrypted random
 def recv_encrypted(conn):
     data = []
-    end_string = b'-----END PGP MESSAGE-----\n'
+    end_string = '-----END PGP MESSAGE-----\n'
     while True:
         try:
             byte_data = conn.recv(1024)
@@ -45,7 +45,7 @@ def recv_encrypted(conn):
         except e:
             print("socket exception")
         data.append(byte_data)
-        if(byte_data == end_string):
+        if(byte_data.decode().endswith(end_string)==True):
             break
     return b''.join(data).decode('utf-8')
 
