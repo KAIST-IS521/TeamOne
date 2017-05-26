@@ -347,21 +347,18 @@ int main(int argc, char *argv[]) {
     }
 
     /* get the initial msg from the server */
-    printf("<<< Receiving the initial msg from the server...\n");
     len = recvMsgUntil2(cli_fd, REG2, (void*)&buf, sizeof(buf));
     if(len < 0){
         handleError(cli_fd, "recvMsgUntil", len);
     }
 
     /* send the menu for registration */
-    printf(">>> Sending the menu selection to the server...\n");
     len = sendMsg2(cli_fd, "2\n", strlen("2\n"));
     if(len < 0){
         handleError(cli_fd, "sendMsg", len);
     }
 
     /* get the msg from the server */
-    printf("<<< Receiving the msg from the server...\n");
     len = recvMsgUntil2(cli_fd, REG2, (void*)&buf, sizeof(buf));
     if(len < 0){
         handleError(cli_fd, "recvMsgUntil", len);
