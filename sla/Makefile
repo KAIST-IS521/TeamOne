@@ -1,4 +1,4 @@
-CFLAGS = -fPIC -Wall -Wextra -O2 -g -lrt -D_FILE_OFFSET_BITS=64 `gpgme-config --libs`# C flags
+CFLAGS = -fPIC -Wall -Wextra -Wno-unused-variable  -O2 -g -lrt -D_FILE_OFFSET_BITS=64 `gpgme-config --libs`# C flags
 LIBPATH = -L$(LIB)
 LDFLAGS = -Wl,-rpath,$(LIB)
 LIB = ./
