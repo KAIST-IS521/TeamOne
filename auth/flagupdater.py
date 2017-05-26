@@ -4,6 +4,7 @@ import socket, sys, re, os
 import json
 import gnupg
 import base64
+import pwd, grp
 
 sys.path.insert(0, '../db')
 import utils
@@ -28,6 +29,12 @@ def initialize_gpg():
         with open(TAPUBKEY+name, "r") as f:
             result = gpg.import_keys(f.read())
             assert result
+
+    # chown 'vagrant:vagrant'
+    uid = pwd.getpwnam("vagrant").pw_uid
+    gid = grp.getgrnam("vagrant").gr_gid
+    os.chown(homedir+"/pubring.gpg", uid, gid)
+    os.chown(homedir+"/pubring.gpg~", uid, gid)
 
 def isTA(signer):
     fnames = os.listdir(TAPUBKEY)
