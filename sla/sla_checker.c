@@ -417,6 +417,7 @@ int signin(int sk, int testn) {
     pausefordebug();
     if ( sendrecv(sk, "\n") == -1 ) return -1;
     if ( sendrecv(sk, "1\n") == -1 ) return -1;
+    pausefordebug();
     if ( sendrecv(sk, "\n") == -1 ) return -1;
     pausefordebug();
 
@@ -493,20 +494,19 @@ int main(int argc, char *argv[]) {
 
     /* Register */
     int ecode = 0;
-    rv = signup(cli_fd);
-    if ( rv == 0 ) {
+    if ( signup(cli_fd) == 0 ) {
         /* Remove account */
-        rv = withdraw(cli_fd);
-        if ( rv == 0 ) { 
+        if ( withdraw(cli_fd) == 0 ) { 
             /* Login&Transfer - test1 */
-            rv = signin(cli_fd, 1);
-            if ( rv == 0 ) {
+            if ( signin(cli_fd, 1)  == 0 ) {
                 /* Login&Transfer - test2 */
-                rv = signin(cli_fd, 2);
-                if ( rv != 0 ) {
-                    if ( sendrecv(cli_fd, "3\n") == -1 )
-                        exit(1);
-                }
+                if ( signin(cli_fd, 2) == 0 ) {
+                    if ( sendrecv(cli_fd, "3\n") == 0 ) {
+                        ecode = 0;
+                    } else
+                        ecode = 1;
+                } else
+                    ecode = 1;
             } else
                 ecode = 1;
         } else
