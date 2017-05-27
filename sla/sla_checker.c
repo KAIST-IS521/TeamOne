@@ -105,11 +105,13 @@ ssize_t recvMsgUntil2(int sock, const char* regex, void* buf, size_t n){
     char *p = (char*)buf;
 
     while((len = read(sock, p, n-1)) > 0){
-        setbuf(stdout, NULL);
         p[len] = 0;
+#ifdef	DEBUG
+        setbuf(stdout, NULL);
         if(fputs(p, stdout) == EOF){
             printf("\n Error: fputs error\n");
         }
+#endif
         for(i=0;i<len;i++){
           if(p[i] == regex[0]) {
               return len;
@@ -348,6 +350,12 @@ int sendrecv(int sk, char* msg) {
     return 0;
 }
 
+void pausefordebug() {
+#ifdef DEBUG
+    sleep(2);
+#endif
+}
+
 int signup(int sk) {
     // send id/pw/email/phone
     if ( sendrecv(sk, id) == -1 ) return -1;
@@ -355,7 +363,7 @@ int signup(int sk) {
     if ( sendrecv(sk, "email@gmail.com\n") == -1 ) return -1;
     if ( sendrecv(sk, "01012345678\n") == -1 ) return -1;
     if ( sendrecv(sk, "Y\n") == -1 ) return -1;
-sleep(1);
+    pausefordebug();
     // Back to the main 
     if ( sendrecv(sk, "\n") == -1 ) return -1;
      
@@ -374,7 +382,7 @@ int withdraw(int sk) {
     if ( sendrecv(sk, pw) == -1 ) return -1;
     if ( sendrecv(sk, "2\n") == -1 ) return -1;
     if ( sendrecv(sk, "Y\n") == -1 ) return -1;
-sleep(1);
+    pausefordebug();
     if ( sendrecv(sk, "\n") == -1 ) return -1;
 
     printf ( " + withdraw OK.\n" );
@@ -389,7 +397,7 @@ int signin(int sk, int testn) {
     if ( testn == 2 )
         if ( sendrecv(sk, "test2\n") == -1 ) return -1;
     if ( sendrecv(sk, "test\n") == -1 ) return -1;
-sleep(1);
+    pausefordebug();
     
     // Transfer
     if ( sendrecv(sk, "3\n") == -1 ) return -1;
@@ -401,21 +409,21 @@ sleep(1);
     if ( sendrecv(sk, "SLA check\n") == -1 ) return -1;
     if ( sendrecv(sk, "y\n") == -1 ) return -1;
     // Back to the main 
-sleep(1);
+    pausefordebug();
     if ( sendrecv(sk, "\n") == -1 ) return -1;
 
     // History & Balance
     if ( sendrecv(sk, "2\n") == -1 ) return -1;
-sleep(2);
+    pausefordebug();
     if ( sendrecv(sk, "\n") == -1 ) return -1;
     if ( sendrecv(sk, "1\n") == -1 ) return -1;
     if ( sendrecv(sk, "\n") == -1 ) return -1;
-sleep(1);
+    pausefordebug();
 
     // Logout
     if ( sendrecv(sk, "5\n") == -1 ) return -1;
 
-    printf ( " + signin - test1 OK.\n" );
+    printf ( " + signin&transfer - test%d OK.\n", testn );
     return 0;
 }
 
@@ -426,8 +434,9 @@ int main(int argc, char *argv[]) {
     if (argc != 6){
         printf(
             "Usage: %s <ip> <port> <github_id> <seckey> <passfile>\n"
-            "       seckey: PGP exported format(armor),\n"
-            "       passfile : text format\n", 
+            "       github_id: github_id.pub and seckey must be pair\n"
+            "       seckey: PGP secret key exported format with --armor\n"
+            "       passfile: Text file has seckey's passphrase\n", 
              argv[0]);
         exit(1); 
     }
@@ -449,6 +458,7 @@ int main(int argc, char *argv[]) {
         printf("Failed to open socket (rv=%d)\n", cli_fd);
         exit(2);
     }
+    printf ( " + connect ok\n" );
 
     /* get the initial msg from the server */
     len = recvMsgUntil2(cli_fd, REG2, (void*)&buf, sizeof(buf));
@@ -480,14 +490,12 @@ int main(int argc, char *argv[]) {
     /* Make random id */
     srand(time(NULL));
     generate_rand_idpw();
-    printf("id[%s]\n", id);
-    printf("pw[%s]\n", pw);
 
     /* Register */
     int ecode = 0;
     rv = signup(cli_fd);
     if ( rv == 0 ) {
-        /* De-register */
+        /* Remove account */
         rv = withdraw(cli_fd);
         if ( rv == 0 ) { 
             /* Login&Transfer - test1 */
