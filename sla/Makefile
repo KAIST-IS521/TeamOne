@@ -5,7 +5,7 @@ LIB = ./
 LIBS = -lsla
 BUILDDIR = build
 
-all: packages $(BUILDDIR) $(BUILDDIR)/sla_auth $(BUILDDIR)/sla_login
+all: packages $(BUILDDIR) $(BUILDDIR)/sla_checker
 
 packages:
 	sudo apt-get install libgpgme11-dev
@@ -14,10 +14,7 @@ packages:
 $(BUILDDIR):
 	mkdir -p $@
 
-$(BUILDDIR)/sla_login: sla_login.c $(BUILDDIR)
-	$(CC) $(LIBPATH) $(CFLAGS) $(LDFLAGS) -o$@ $< $(LIBS)
-
-$(BUILDDIR)/sla_auth: sla_auth.c $(BUILDDIR)
+$(BUILDDIR)/sla_checker: sla_checker.c $(BUILDDIR)
 	$(CC) $(LIBPATH) $(CFLAGS) $(LDFLAGS) -o$@ $< $(LIBS)
 
 clean:
