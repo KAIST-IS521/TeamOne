@@ -26,6 +26,8 @@
 #define ID_LEN 9
 char id[ID_LEN+2] = {0}; // One for newline, one for null
 char pw[ID_LEN+2] = {0};
+char test1_pw[MAX_LEN] = {0};
+char test2_pw[MAX_LEN] = {0};
 
 /* 
  * Some functions come from https://github.com/seiyak/GPGME-sample-code
@@ -339,6 +341,48 @@ int generate_rand_idpw() {
     return 0;
 }
 
+int loadtestpass() {
+    FILE* fp = NULL;
+    char buf[1024] = {0};
+    int len = 0;
+
+    memset(test1_pw, 0, MAX_LEN);
+    memset(test2_pw, 0, MAX_LEN);
+
+    fp = fopen ("../db/test1.pw", "r");
+    if (fp) {
+        fgets(buf, 1024, fp);
+        len = strlen(buf);
+        if ( len > 0 && len < 1024 ) {
+            strncpy(test1_pw, buf, len);
+            if (test1_pw[len] != '\n' )
+                test1_pw[len] = '\n';
+            memset(buf, 0, 1024);
+            fp = fopen ( "../db/test2.pw", "r");
+            if (fp) {
+                fgets(buf, 1024, fp);
+                len = strlen(buf);
+                if ( len > 0 && len < 1024 ) {
+                    strncpy(test2_pw, buf, len);
+                    if (test2_pw[len] != '\n' )
+                        test2_pw[len] = '\n';
+                    return 0;
+                }
+            }
+        }
+    }
+    return -1;
+}
+
+int checkfail(char* buf) {
+    char* ptn = "** Login fail **";
+    if ( strstr(buf, ptn) ) {
+        printf ( " - Login fail\n" );
+        return 1;
+    }
+    return 0;
+}
+
 int sendrecv(int sk, char* msg) {
     char buf[MAX_LEN*4] = {0};
     memset(buf, 0, sizeof(buf));
@@ -346,6 +390,8 @@ int sendrecv(int sk, char* msg) {
     if ( sendMsg2(sk, msg, strlen(msg)) <= 0 ) 
         return -1;
     if ( recvMsgUntil2(sk, REG2, (void*)&buf, sizeof(buf)) <= 0 ) 
+        return -1;
+    if ( checkfail(buf) != 0 )
         return -1;
     return 0;
 }
@@ -396,7 +442,10 @@ int signin(int sk, int testn) {
         if ( sendrecv(sk, "test1\n") == -1 ) return -1;
     if ( testn == 2 )
         if ( sendrecv(sk, "test2\n") == -1 ) return -1;
-    if ( sendrecv(sk, "test\n") == -1 ) return -1;
+    if ( testn == 1 )
+        if ( sendrecv(sk, test1_pw) == -1 ) return -1;
+    if ( testn == 2 )
+        if ( sendrecv(sk, test2_pw) == -1 ) return -1;
     pausefordebug();
     
     // Transfer
@@ -459,7 +508,7 @@ int main(int argc, char *argv[]) {
         printf("Failed to open socket (rv=%d)\n", cli_fd);
         exit(2);
     }
-    printf ( " + connect ok\n" );
+    printf ( " + connect OK\n" );
 
     /* get the initial msg from the server */
     len = recvMsgUntil2(cli_fd, REG2, (void*)&buf, sizeof(buf));
@@ -491,6 +540,9 @@ int main(int argc, char *argv[]) {
     /* Make random id */
     srand(time(NULL));
     generate_rand_idpw();
+
+    /* Loading test1 and test2 password */
+    loadtestpass();
 
     /* Register */
     int ecode = 0;
