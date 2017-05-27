@@ -501,10 +501,8 @@ int main(int argc, char *argv[]) {
             if ( signin(cli_fd, 1)  == 0 ) {
                 /* Login&Transfer - test2 */
                 if ( signin(cli_fd, 2) == 0 ) {
-                    if ( sendrecv(cli_fd, "3\n") == 0 ) {
-                        ecode = 0;
-                    } else
-                        ecode = 1;
+                    sendrecv(cli_fd, "3\n");
+                    ecode = 0;
                 } else
                     ecode = 1;
             } else
