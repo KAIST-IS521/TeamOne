@@ -1,4 +1,4 @@
-# SLA Checkers
+# SLA Checker
 
 1. `sla_checker.c`
     * SLA checker for PGP authentication
@@ -16,5 +16,5 @@
 
 ## How to execute `sla_checker`
 ```
-~/TeamOne/sla$ ./build/sla_checker <ip> <port> <github_id> <private key path> <passphrase path>
+~/TeamOne/sla$ ./build/sla_checker <ip> <port> <github_id> <private key file path> <passphrase file path>
 ```
