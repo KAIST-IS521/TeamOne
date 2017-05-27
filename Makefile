@@ -1,4 +1,4 @@
-all: db auth
+all: db auth sla
 
 db:
 	make -C $@
@@ -6,7 +6,10 @@ db:
 auth:
 	make -C $@
 
+sla:
+	make -C $@
+
 clean:
 	
-.PHONY: all db auth clean
+.PHONY: all db auth sla clean
 
