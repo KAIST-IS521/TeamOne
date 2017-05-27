@@ -1,7 +1,4 @@
 -- IMPORTANT! ALL EXISTING DATA ARE DELETED
-DROP SCHEMA IF EXISTS `bankDB`;
-
-source create_bankdb.sql
 use bankDB;
 
 INSERT INTO `auth_table` VALUES(
@@ -16,14 +13,14 @@ INSERT INTO `user_table`
     'test',
     'test@test.com',
     '01012341234',
-    2000,
+    1000,
     'test'
 ), (
     'test2',
     'test',
     'test@test.com',
     '01012341234',
-    1000,
+    0,
     'test'
 );
 
