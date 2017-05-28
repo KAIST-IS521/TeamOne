@@ -5,6 +5,7 @@ import json
 import gnupg
 import base64
 import pwd, grp
+from os.path import expanduser
 
 sys.path.insert(0, '../db')
 import utils
@@ -17,7 +18,7 @@ def initialize_gpg():
     global gpg
     global flag
     global host
-    homedir = '/home/vagrant/.gnupg'
+    homedir = expanduser("~") + "/.gnupg"
     try:
         gpg = gnupg.GPG(gnupghome=homedir) 
     except TypeError:
