@@ -41,6 +41,8 @@ As an opening event, the customers will earn 1,000 won after the initial registr
 ~/TeamOne$ ./bank <passphrase>
 ```
 
+- `passphrase`: the passphrase for the server(`bank`)'s private key`
+
 ## How to access the banking system
 ```
 > nc ip_addr 1588
@@ -52,3 +54,4 @@ As an opening event, the customers will earn 1,000 won after the initial registr
 ~/TeamOne/auth$ sudo python3 flagupdater.py <passphrase>
 ```
 
+- `passphrase`: the passphrase for the server(`bank`)'s private key
