@@ -32,8 +32,8 @@ def initialize_gpg():
             assert result
 
     # chown 'vagrant:vagrant'
-    uid = pwd.getpwnam("vagrant").pw_uid
-    gid = grp.getgrnam("vagrant").gr_gid
+    uid = os.getuid()
+    gid = os.getgid()
     os.chown(homedir+"/pubring.gpg", uid, gid)
     os.chown(homedir+"/pubring.gpg~", uid, gid)
 
