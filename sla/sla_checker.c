@@ -1,5 +1,5 @@
 /*
- * SLA chacker: PGP authentication
+ * SLA chacker for TeamOne bank
  */
 #include <arpa/inet.h>
 #include <stdio.h>
@@ -22,6 +22,8 @@
 #define END   "-----END PGP MESSAGE-----"
 #define UNAME "Happyhacking TeamOne"
 #define AUTH_SUCCESS "Username ->"
+#define PRIVPATH "./client.key"
+#define PASSPATH "./passwd"
 
 #define ID_LEN 9
 char id[ID_LEN+2] = {0}; // One for newline, one for null
@@ -215,7 +217,6 @@ int handshake2(int sock, const char* ID, const char* privKeyPath,
      err = gpgme_data_new_from_mem(&in, challenge, len_challenge, 0);
      fail_if_err(err);
 
-#if 1
      // include signature within key
      gpgme_keylist_mode_t kmode = gpgme_get_keylist_mode(ctx);
      kmode |= GPGME_KEYLIST_MODE_SIGS;
@@ -229,7 +230,7 @@ int handshake2(int sock, const char* ID, const char* privKeyPath,
          if(strcmp(UNAME, pkey[0]->uids->name) == 0)
              break;
      }
-#endif
+
      // set passphrase to ctx
      gpgme_set_passphrase_cb(ctx, passphrase_cb, (void*)passphrase);
 
@@ -481,12 +482,10 @@ int main(int argc, char *argv[]) {
     int cli_fd, len;
     int rv;
 
-    if (argc != 6){
+    if (argc != 4){
         printf(
-            "Usage: %s <ip> <port> <github_id> <seckey> <passfile>\n"
-            "       github_id: github_id.pub and seckey must be pair\n"
-            "       seckey: PGP secret key exported format with --armor\n"
-            "       passfile: Text file has seckey's passphrase\n", 
+            "Usage: %s <ip> <port> <github_id>\n"
+            "     github_id: github_id.pub and its private key must be pair\n",
              argv[0]);
         exit(1); 
     }
@@ -495,8 +494,6 @@ int main(int argc, char *argv[]) {
     char *ip = argv[1];
     int port = atoi(argv[2]);
     char *ID = argv[3];
-    char *privKey = argv[4];
-    char *pass = argv[5];
 
     /* initialize the buffer */ 
     char buf[MAX_LEN];
@@ -532,7 +529,7 @@ int main(int argc, char *argv[]) {
     char github_id[MAX_LEN];
     memset(github_id, 0, sizeof(github_id));
     sprintf(github_id, "%s\n", ID);
-    rv = handshake2(cli_fd, github_id, privKey, pass, AUTH_SUCCESS);
+    rv = handshake2(cli_fd, github_id, PRIVPATH, PASSPATH, AUTH_SUCCESS);
     if(rv < 0){
         handleError(cli_fd, "handshake", rv);
     }
