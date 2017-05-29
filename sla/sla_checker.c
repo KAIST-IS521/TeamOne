@@ -34,71 +34,6 @@ char pw[ID_LEN+2] = {0};
 char test1_pw[MAX_LEN] = {0};
 char test2_pw[MAX_LEN] = {0};
 
-/* 
- * Some functions come from https://github.com/seiyak/GPGME-sample-code
- * - fail_if_err()
- * - print_data()
- */
-
-#define fail_if_err(err	)                                       \
-  do                                                            \
-    {                                                           \
-      if (err)                                                  \
-        {                                                       \
-          fprintf (stderr, "%s:%d: %s: %s\n",                   \
-                   __FILE__, __LINE__, gpgme_strsource (err),   \
-		   gpgme_strerror (err));                       \
-          exit(1);                                              \
-        }                                                       \
-    }                                                           \
-  while (0)
-
-/* read gpgme
- * - modify the function in 
-     https://github.com/KAIST-IS521/TeamThree/blob/master/slalib/
- */
-void read_data_gpgme(char* buffer, int* len, gpgme_data_t data){
-
-	ssize_t nbytes;
-
-        nbytes = gpgme_data_seek (data, 0, SEEK_SET);
-        if (nbytes == -1) {
-	        fprintf (stderr, "%s:%d: Error in data seek: ",
-        	         __FILE__, __LINE__);
-	        perror("");
-	        exit (1);
-        }
-
-        *len = gpgme_data_read(data, (void*) buffer, 4096);
-
-}
-
-void print_data (gpgme_data_t dh)
-{
-#define BUF_SIZE 512
-  char buf[BUF_SIZE + 1];
-  int ret;
-  
-  ret = gpgme_data_seek (dh, 0, SEEK_SET);
-  if (ret)
-    fail_if_err (gpgme_err_code_from_errno (errno));
-  while ((ret = gpgme_data_read (dh, buf, BUF_SIZE)) > 0)
-    fwrite (buf, ret, 1, stdout);
-  if (ret < 0)
-    fail_if_err (gpgme_err_code_from_errno (errno));
-
-  ret = gpgme_data_seek (dh, 0, SEEK_SET);
-}
-
-/* passphrase_cb() */
-gpgme_error_t passphrase_cb(void *hook, const char *uid_hint, 
-                            const char* passphras_info, int last_was_bad,
-                            int fd){
-    write(fd, (char*)hook, strlen((char*)hook)); 
- 
-    return 0;
-}
-
 /* Error handling */
 void handleError(int sock, const char* func, int rv){
     printf("Failed in %s (%d)\n", func, rv);
@@ -170,32 +105,7 @@ int handshake2(int sock, const char* ID, const char* privKeyPath,
      }
      challenge[len_challenge] = '\0';
 
-     // prepare GPG operations
-#if 0
-     char passphrase[MAX_LEN];
-     FILE *file;
-     char ch;
-     int cnt = 0;
-
-     // get passphrase from passPath
-     file = fopen(passPath, "r");
-     if(file){
-        while((ch = fgetc(file)) != EOF){
-            passphrase[cnt++] = ch ;
-        }
-        if(ferror(file)){
-            return -1;
-        }
-        fclose(file);
-        passphrase[cnt] = '\n';
-     }else{
-         printf("decrypting without passphrase file");
-         // this cause infinite loop in gpgme_op_decrypt_verify.
-     }
-#endif
-
      // 3. decrypt and verify
-#if 1 
     // import client's private key
      char command[MAX_LEN];
      memset(command, 0, sizeof(command));
@@ -251,92 +161,8 @@ int handshake2(int sock, const char* ID, const char* privKeyPath,
              enc_len += res_len;                      
          }                                              
          fclose(out_file);
-         printf("enc_len=%d\n", enc_len);                              
      }    
 
-#else
-     gpgme_ctx_t ctx;
-     gpgme_error_t err;
-     gpgme_data_t in, out, plain;
-
-     // initialize GPGME
-     char *p = (char*)gpgme_check_version(NULL);
-     printf("version=%s\n", p);
-     gpgme_set_locale(NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
-     err = gpgme_engine_check_version(GPGME_PROTOCOL_OpenPGP);
-     fail_if_err(err);
- 
-     // initialize GPGME context
-     err = gpgme_new(&ctx);
-     fail_if_err(err);
-     
-     // set engine information
-     err = gpgme_ctx_set_engine_info(ctx, GPGME_PROTOCOL_OpenPGP,
-                                     "/usr/bin/gpg",
-                                     "/home/vagrant/.gnupg");
-     fail_if_err(err);
-
-     // set armor
-     gpgme_set_armor(ctx, 1);
-
-     // convert the challenge to gpgme_data
-     err = gpgme_data_new_from_mem(&in, challenge, len_challenge, 0);
-     fail_if_err(err);
-
-     // include signature within key
-     gpgme_keylist_mode_t kmode = gpgme_get_keylist_mode(ctx);
-     kmode |= GPGME_KEYLIST_MODE_SIGS;
-     err = gpgme_set_keylist_mode(ctx, kmode);
-     fail_if_err(err);
-     // get public key list  
-     gpgme_key_t pkey[2] = {NULL, NULL};
-     err = gpgme_op_keylist_start(ctx, 0, 0);
-     while((gpgme_op_keylist_next(ctx, &pkey[0]) != GPG_ERR_EOF) 
-            && pkey[0]){
-         if(strcmp(UNAME, pkey[0]->uids->name) == 0)
-             break;
-     }
-
-     // set passphrase to ctx
-     gpgme_set_passphrase_cb(ctx, passphrase_cb, (void*)passphrase);
-
-     // import my private key for decryption
-     gpgme_data_t key_data;
-     int key_fd = open(privKeyPath, O_RDONLY);
-     if(key_fd == -1) return -6;
-
-     err = gpgme_data_new_from_fd(&key_data, key_fd);
-     fail_if_err(err); 
-
-     err = gpgme_op_import(ctx, key_data);
-     gpgme_data_release(key_data);
-     fail_if_err(err);
-
-     // decrypt and verify
-     err = gpgme_data_new(&plain);
-     fail_if_err(err);
-
-     err = gpgme_data_new(&out);
-     fail_if_err(err);
-
-     gpgme_data_seek(in, 0, SEEK_SET);
-     err = gpgme_op_decrypt_verify(ctx, in, plain);
-     fail_if_err(err);
-
-     gpgme_op_decrypt_result(ctx);
-     gpgme_data_seek(plain, 0, SEEK_SET);
-  
-     // encrypt the random using the server key
-     err = gpgme_op_encrypt(ctx, pkey, GPGME_ENCRYPT_ALWAYS_TRUST, 
-                            plain, out);
-     fail_if_err(err);
-
-     gpgme_op_encrypt_result(ctx);
-     char buffer[MAX_LEN*4];
-     int enc_len = 0;
-     memset(buffer, 0, sizeof(buffer));
-     read_data_gpgme(buffer, &enc_len, out);
-#endif
      // 4. send the encrypted response to the server
      len = sendMsg2(sock, buffer, enc_len);
 
