@@ -1,15 +1,7 @@
-CFLAGS = -fPIC -Wall -Wextra -Wno-unused-parameter -O2 -g -lrt -D_FILE_OFFSET_BITS=64 `gpgme-config --libs`# C flags
-LIBPATH = -L$(LIB)
-LDFLAGS = -Wl,-rpath,$(LIB)
-LIB = ./
-LIBS = -lsla
+CFLAGS = -fPIC -Wall -Wextra -Wno-unused-parameter
 BUILDDIR = build
 
-all: packages $(BUILDDIR) $(BUILDDIR)/sla_checker
-
-packages:
-	sudo apt-get -y install libgpgme11-dev
-	sudo apt-get -y install libssl-dev
+all: $(BUILDDIR) $(BUILDDIR)/sla_checker
 
 $(BUILDDIR):
 	mkdir -p $@

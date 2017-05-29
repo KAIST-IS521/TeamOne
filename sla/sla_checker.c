@@ -10,10 +10,8 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <regex.h>
-#include <gpgme.h>
 #include <locale.h>
 #include <time.h>
-#include "slalib.h"
 
 #define MAX_LEN 1024
 #define REG1 "->"
@@ -33,6 +31,47 @@ char id[ID_LEN+2] = {0}; // One for newline, one for null
 char pw[ID_LEN+2] = {0};
 char test1_pw[MAX_LEN] = {0};
 char test2_pw[MAX_LEN] = {0};
+
+int openTCPSock(char *IP, unsigned short port)
+{
+    int sock_fd;
+    struct sockaddr_in *addr;
+
+    if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+    {// socket
+        printf("%s : Failed to open socket\n", __FUNCTION__);
+        return -1;
+    }
+
+
+    // set up addr
+    addr = calloc(sizeof(struct sockaddr_in), 1);
+    addr->sin_family = AF_INET;
+    addr->sin_port = htons(port);
+
+    if (inet_pton(AF_INET, IP, &addr->sin_addr) != 1)
+    {
+        printf("%s: Failed in inet_pton()\n", __FUNCTION__);
+        close(sock_fd);
+        return -1;
+    }
+
+    // connect
+    if (connect(sock_fd, (struct sockaddr *)addr, sizeof(struct sockaddr_in)) < 0)
+    {
+        close(sock_fd);
+        return -1;
+    }
+
+    // return the socket handle
+    return sock_fd;
+}
+
+void closeSock(int sock)
+{
+    close(sock);
+}
+
 
 /* Error handling */
 void handleError(int sock, const char* func, int rv){
