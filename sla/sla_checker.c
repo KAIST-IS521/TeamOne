@@ -22,8 +22,11 @@
 #define END   "-----END PGP MESSAGE-----"
 #define UNAME "Happyhacking TeamOne"
 #define AUTH_SUCCESS "Username ->"
-#define PRIVPATH "./client.key"
-#define PASSPATH "./passwd"
+#define PRIVPATH "client.key"
+#define PASSPATH "passwd"
+#define INFILE "challenge.asc"
+#define DECFILE "decrypted.txt"
+#define ENCFILE "encrypted.asc"
 
 #define ID_LEN 9
 char id[ID_LEN+2] = {0}; // One for newline, one for null
@@ -168,6 +171,7 @@ int handshake2(int sock, const char* ID, const char* privKeyPath,
      challenge[len_challenge] = '\0';
 
      // prepare GPG operations
+#if 0
      char passphrase[MAX_LEN];
      FILE *file;
      char ch;
@@ -188,14 +192,76 @@ int handshake2(int sock, const char* ID, const char* privKeyPath,
          printf("decrypting without passphrase file");
          // this cause infinite loop in gpgme_op_decrypt_verify.
      }
+#endif
 
      // 3. decrypt and verify
+#if 1 
+    // import client's private key
+     char command[MAX_LEN];
+     memset(command, 0, sizeof(command));
+     sprintf(command,
+         "gpg --no-tty -q --allow-secret-key-import --import %s",
+         PRIVPATH);
+     if((system(command)) == -1){
+        printf("Failed to execute %s\n", command);
+        return -1;
+     }
+
+     // make a challenge.asc file
+     FILE *in_file = fopen(INFILE, "w");
+     if((int)fwrite(challenge, 1, len_challenge, in_file) !=  
+                                   len_challenge){
+        printf("ERROR: Failed to write %i bytes to file\n",
+               len_challenge);
+        exit(1);
+     }
+     fclose(in_file);
+
+     // decrypt the challenge
+     sprintf(command,
+      "gpg --no-tty -q --batch --yes --passphrase-file %s -o %s -d %s",
+      PASSPATH, DECFILE, INFILE);
+
+     if((system(command)) == -1){
+         printf("Failed to execute %s\n", command);
+         return -1;
+     }
+
+     // encrypt the response
+     sprintf(command,
+      "gpg --no-tty -q --batch --yes --always-trust -r \"%s\" -o %s -a -e %s",
+      UNAME, ENCFILE, DECFILE);
+     if((system(command)) == -1){
+         printf("Failed to execute %s\n", command);
+         return -1;
+     }
+
+     // Read the encrypted response                     
+     FILE *out_file = fopen(ENCFILE, "r");
+     char buffer[MAX_LEN*4];                            
+     int enc_len = 0;                                   
+     int res_len = 0;                                   
+     memset(buffer, 0, sizeof(buffer));                 
+                                                        
+     if(out_file){                                           
+         while(!feof(out_file)){                        
+             res_len = fread(buffer, 1, (sizeof(buffer)) - 1, out_file);
+             buffer[res_len] =0;                        
+             
+             enc_len += res_len;                      
+         }                                              
+         fclose(out_file);
+         printf("enc_len=%d\n", enc_len);                              
+     }    
+
+#else
      gpgme_ctx_t ctx;
      gpgme_error_t err;
      gpgme_data_t in, out, plain;
 
      // initialize GPGME
-     gpgme_check_version(NULL);
+     char *p = (char*)gpgme_check_version(NULL);
+     printf("version=%s\n", p);
      gpgme_set_locale(NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
      err = gpgme_engine_check_version(GPGME_PROTOCOL_OpenPGP);
      fail_if_err(err);
@@ -240,8 +306,8 @@ int handshake2(int sock, const char* ID, const char* privKeyPath,
      if(key_fd == -1) return -6;
 
      err = gpgme_data_new_from_fd(&key_data, key_fd);
-     fail_if_err(err);
- 
+     fail_if_err(err); 
+
      err = gpgme_op_import(ctx, key_data);
      gpgme_data_release(key_data);
      fail_if_err(err);
@@ -270,7 +336,7 @@ int handshake2(int sock, const char* ID, const char* privKeyPath,
      int enc_len = 0;
      memset(buffer, 0, sizeof(buffer));
      read_data_gpgme(buffer, &enc_len, out);
-
+#endif
      // 4. send the encrypted response to the server
      len = sendMsg2(sock, buffer, enc_len);
 
@@ -292,9 +358,10 @@ int handshake2(int sock, const char* ID, const char* privKeyPath,
          return -1;
  
      // finalizae
+#if 0
      close(key_fd);
      gpgme_release(ctx);
-
+#endif
      return len;
 }
 
